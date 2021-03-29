@@ -1,4 +1,6 @@
 //header file containing declarations, constants and variables
+#ifndef MAIN_HEADER
+#define MAIN_HEADER
 
 #define SDRAM_BASE            0xC0000000
 #define FPGA_ONCHIP_BASE      0xC8000000
@@ -38,3 +40,5 @@
 
 #define FALSE 0
 #define TRUE 1
+
+#endif
