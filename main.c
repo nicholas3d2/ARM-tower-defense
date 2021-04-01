@@ -37,7 +37,7 @@
 #define RESOLUTION_Y 240
 
 /* Constants for animation */
-#define GRID_LEN 19
+#define GRID_LEN 20
 #define BOX_LEN 2
 #define NUM_BOXES 8
 
@@ -115,7 +115,6 @@ int main(void) {
 
 //moves a 20x20 box around on the screen
 void move_box_x(int direction){
-
 }
 
 void move_box_y(int direction){
@@ -123,11 +122,12 @@ void move_box_y(int direction){
 }
 
 void draw_grid_box(int x0, int y0, short int colour){
-    draw_line(x0, y0, x0+GRID_LEN, y0, colour);
-    draw_line(x0, y0, x0, y0+GRID_LEN, colour);
-    draw_line(x0+GRID_LEN, y0+GRID_LEN, x0+GRID_LEN, y0, colour);
-    draw_line(x0+GRID_LEN, y0+GRID_LEN, x0, y0+GRID_LEN, colour);
-
+    draw_line(x0, y0, x0+(GRID_LEN-1), y0, colour);
+    draw_line(x0, y0, x0, y0 + (GRID_LEN - 1), colour);
+    draw_line(x0 + (GRID_LEN - 1), y0 + (GRID_LEN - 1), x0 + (GRID_LEN - 1), y0,
+              colour);
+    draw_line(x0 + (GRID_LEN - 1), y0 + (GRID_LEN - 1), x0, y0 + (GRID_LEN - 1),
+              colour);
 }
 
 // draws a pixel given its location and colour
