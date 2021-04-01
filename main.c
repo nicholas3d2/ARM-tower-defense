@@ -37,7 +37,7 @@
 #define RESOLUTION_Y 240
 
 /* Constants for animation */
-#define GRID_LEN 20
+#define GRID_LEN 19
 #define BOX_LEN 2
 #define NUM_BOXES 8
 
@@ -115,7 +115,7 @@ int main(void) {
 
 //moves a 20x20 box around on the screen
 void move_box_x(int direction){
-    
+
 }
 
 void move_box_y(int direction){
