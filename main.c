@@ -9,7 +9,7 @@ int main(void) {}
 void plot_pixel(int x, int y, short int line_color) {
   *(short int *)(pixel_buffer_start + (y << 10) + (x << 1)) = line_color;
 }
-
+ 
 // draws a line given two points and colour
 void draw_line(int x0, int y0, int x1, int y1, short int line_color) {
   bool isSteep = ABS(y1 - y0) > ABS(x1 - x0);
