@@ -37,6 +37,7 @@
 #define RESOLUTION_Y 240
 
 /* Constants for animation */
+#define GRID_LEN 20
 #define BOX_LEN 2
 #define NUM_BOXES 8
 
@@ -64,6 +65,25 @@ int main(void) {
     volatile int * JTAG_UART_ptr = (int *)0xFF201000;// JTAG UART address
     volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
 
+    /* set front pixel buffer to start of FPGA On-chip memory */
+    *(pixel_ctrl_ptr + 1) = 0xC8000000; // first store the address in the 
+                                        // back buffer
+    /* now, swap the front/back buffers, to set the front buffer location */
+    wait_for_vsync();
+    /* initialize a pointer to the pixel buffer, used by drawing functions */
+    pixel_buffer_start = *pixel_ctrl_ptr;
+    clear_screen(); // pixel_buffer_start points to the pixel buffer
+    /* set back pixel buffer to start of SDRAM memory */
+    *(pixel_ctrl_ptr + 1) = 0xC0000000;
+    pixel_buffer_start = *(pixel_ctrl_ptr + 1); // we draw on the back buffer
+    wait_for_vsync();
+    clear_screen();
+
+    //draw grid box (user controlled grid box)
+    int xcurrent = 0;
+    int ycurrent = 0;
+    draw_grid_box(xcurrent, ycurrent, WHITE);
+
     //TEST JTAG UART
     char text_string[] = "\nJTAG UART test\n> \0";
     char *str, c;
@@ -72,11 +92,36 @@ int main(void) {
         put_jtag(JTAG_UART_ptr,*str);    
     }
 
+    //Main program loop, read user inputs while running
     while(1){
         c = get_jtag(JTAG_UART_ptr);
-        if(c != '\0')
+        if(c != '\0'){
             put_jtag(JTAG_UART_ptr, c);
+            if(c == 'w'){
+
+            }else if(c == 'a'){
+
+            }else if(c == 's'){
+
+            }else if(c == 'd'){
+
+            }
+        }
+            
     }
+
+}
+
+//moves a 20x20 box around on the screen
+void move_box(int x0, int y0, int direction){
+
+}
+
+void draw_grid_box(int x0, int y0, short int colour){
+    draw_line(x0, y0, x0+GRID_LEN, y0, colour);
+    draw_line(x0, y0, x0, y0+GRID_LEN, colour);
+    draw_line(x0+GRID_LEN, y0+GRID_LEN, x0+GRID_LEN, y0, colour);
+    draw_line(x0+GRID_LEN, y0+GRID_LEN, x0, y0+GRID_LEN, colour);
 
 }
 
