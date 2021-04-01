@@ -41,4 +41,16 @@
 #define FALSE 0
 #define TRUE 1
 
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+void plot_pixel(int x, int y, short int line_color);
+void draw_line(int x0, int y0, int x1, int y1, short int line_color);
+void clear_screen();
+void wait_for_vsync();
+void draw_box(int x, int y, short int line_colour);
+
+volatile int pixel_buffer_start; // global variable
+
 #endif
