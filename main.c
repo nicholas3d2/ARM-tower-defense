@@ -58,6 +58,9 @@ char get_jtag(volatile int * JTAG_UART_ptr);
 void put_jtag(volatile int * JTAG_UART_ptr,char c);
 
 volatile int pixel_buffer_start; // global variable
+//location of user's grid box
+int xcurrent = 0;
+int ycurrent = 0;
 
 /************main.h************/
 
@@ -80,8 +83,6 @@ int main(void) {
     clear_screen();
 
     //draw grid box (user controlled grid box)
-    int xcurrent = 0;
-    int ycurrent = 0;
     draw_grid_box(xcurrent, ycurrent, WHITE);
 
     //TEST JTAG UART
@@ -98,13 +99,13 @@ int main(void) {
         if(c != '\0'){
             put_jtag(JTAG_UART_ptr, c);
             if(c == 'w'){
-
+                move_box_y(-GRID_LEN); //move up 
             }else if(c == 'a'){
-
+                move_box_x(-GRID_LEN); //move left
             }else if(c == 's'){
-
+                move_box_y(GRID_LEN); //move down
             }else if(c == 'd'){
-
+                move_box_x(GRID_LEN); //move left
             }
         }
             
@@ -113,7 +114,11 @@ int main(void) {
 }
 
 //moves a 20x20 box around on the screen
-void move_box(int x0, int y0, int direction){
+void move_box_x(int direction){
+    
+}
+
+void move_box_y(int direction){
 
 }
 
