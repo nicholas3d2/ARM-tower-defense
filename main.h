@@ -15,6 +15,7 @@
 #define TIMER_BASE            0xFF202000
 #define PIXEL_BUF_CTRL_BASE   0xFF203020
 #define CHAR_BUF_CTRL_BASE    0xFF203030
+#define JTAG_UART_BASE        0xFF201000
 
 /* VGA colors */
 #define WHITE 0xFFFF
@@ -50,6 +51,9 @@ void draw_line(int x0, int y0, int x1, int y1, short int line_color);
 void clear_screen();
 void wait_for_vsync();
 void draw_box(int x, int y, short int line_colour);
+
+char get_jtag(volatile int * JTAG_UART_ptr);
+void put_jtag(volatile int * JTAG_UART_ptr,char c);
 
 volatile int pixel_buffer_start; // global variable
 

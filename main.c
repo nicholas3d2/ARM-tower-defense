@@ -3,11 +3,47 @@
 
 #include "main.h"
 
-int main(void) {}
+int main(void) {
+    volatile int * JTAG_UART_ptr = (int *)0xFF201000;// JTAG UART address
+    volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
+
+    //TEST JTAG UART
+    char text_string[] = "\nJTAG UART test\n> \0";
+    char *str, c;
+
+    for(str = text_string; *str != 0; ++str){
+        put_jtag(JTAG_UART_ptr,*str);    
+    }
+
+    while(1){
+        c = get_jtag(JTAG_UART_ptr);
+        if(c != '\0')
+            put_jtag(JTAG_UART_ptr, c);
+    }
+
+}
 
 // draws a pixel given its location and colour
 void plot_pixel(int x, int y, short int line_color) {
   *(short int *)(pixel_buffer_start + (y << 10) + (x << 1)) = line_color;
+}
+
+char get_jtag(volatile int * JTAG_UART_ptr){
+    int data;
+    data = *(JTAG_UART_ptr);
+    if(data & 0x00008000) //check RVALID
+        return ((char)data & 0xFF);
+    else
+        return ('\0');
+
+}
+
+void put_jtag(volatile int * JTAG_UART_ptr, char c){
+    int control;
+    control = *(JTAG_UART_ptr + 1); //read control reg
+    if(control & 0xFFFF0000){
+        *(JTAG_UART_ptr) = c;
+    }
 }
 
 // draws a line given two points and colour
