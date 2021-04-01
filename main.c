@@ -62,6 +62,14 @@ volatile int pixel_buffer_start; // global variable
 int xcurrent = 0;
 int ycurrent = 0;
 
+// location of user's grid one frame before
+int xprev1 = 0;
+int yprev1 = 0;
+
+// location of the user's grid two frames before
+int xprev2 = 0;
+int yprev2 = 0;
+
 /************main.h************/
 
 int main(void) {
@@ -94,6 +102,20 @@ int main(void) {
 
   // Main program loop, read user inputs while running
   while (1) {
+    // clear 2 frames before
+
+    draw_grid_box(xprev2, yprev2, 0);
+	
+    // draw
+    draw_grid_box(xcurrent, ycurrent, WHITE);
+
+    // update position
+    xprev2 = xprev1;
+    yprev2 = yprev1;
+
+    xprev1 = xcurrent;
+    yprev1 = ycurrent;
+
     c = get_jtag(JTAG_UART_ptr);
     if (c != '\0') {
       put_jtag(JTAG_UART_ptr, c);
@@ -108,19 +130,20 @@ int main(void) {
       }
     }
 
-    draw_grid_box(xcurrent, ycurrent, WHITE);
+    wait_for_vsync();
+    pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
   }
 }
 
 // moves a 20x20 box around on the screen
 void move_box_x(int direction) {
-	int nextX = direction + xcurrent;
-        xcurrent = (nextX >= RESOLUTION_X || nextX < 0) ? xcurrent : nextX;
+  int nextX = direction + xcurrent;
+  xcurrent = (nextX >= RESOLUTION_X || nextX < 0) ? xcurrent : nextX;
 }
 
 void move_box_y(int direction) {
-	int nextY = direction + ycurrent;
-	ycurrent = (nextY >= RESOLUTION_Y || nextY < 0) ? ycurrent : nextY;
+  int nextY = direction + ycurrent;
+  ycurrent = (nextY >= RESOLUTION_Y || nextY < 0) ? ycurrent : nextY;
 }
 
 void draw_grid_box(int x0, int y0, short int colour) {
