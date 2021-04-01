@@ -3,20 +3,20 @@
 //#include "main.h"
 
 /************main.h************/
-#define SDRAM_BASE            0xC0000000
-#define FPGA_ONCHIP_BASE      0xC8000000
-#define FPGA_CHAR_BASE        0xC9000000
+#define SDRAM_BASE 0xC0000000
+#define FPGA_ONCHIP_BASE 0xC8000000
+#define FPGA_CHAR_BASE 0xC9000000
 
 /* Cyclone V FPGA devices */
-#define LEDR_BASE             0xFF200000
-#define HEX3_HEX0_BASE        0xFF200020
-#define HEX5_HEX4_BASE        0xFF200030
-#define SW_BASE               0xFF200040
-#define KEY_BASE              0xFF200050
-#define TIMER_BASE            0xFF202000
-#define PIXEL_BUF_CTRL_BASE   0xFF203020
-#define CHAR_BUF_CTRL_BASE    0xFF203030
-#define JTAG_UART_BASE        0xFF201000
+#define LEDR_BASE 0xFF200000
+#define HEX3_HEX0_BASE 0xFF200020
+#define HEX5_HEX4_BASE 0xFF200030
+#define SW_BASE 0xFF200040
+#define KEY_BASE 0xFF200050
+#define TIMER_BASE 0xFF202000
+#define PIXEL_BUF_CTRL_BASE 0xFF203020
+#define CHAR_BUF_CTRL_BASE 0xFF203030
+#define JTAG_UART_BASE 0xFF201000
 
 /* VGA colors */
 #define WHITE 0xFFFF
@@ -54,105 +54,106 @@ void clear_screen();
 void wait_for_vsync();
 void draw_box(int x, int y, short int line_colour);
 
-char get_jtag(volatile int * JTAG_UART_ptr);
-void put_jtag(volatile int * JTAG_UART_ptr,char c);
+char get_jtag(volatile int *JTAG_UART_ptr);
+void put_jtag(volatile int *JTAG_UART_ptr, char c);
 
 volatile int pixel_buffer_start; // global variable
-//location of user's grid box
+// location of user's grid box
 int xcurrent = 0;
 int ycurrent = 0;
 
 /************main.h************/
 
 int main(void) {
-    volatile int * JTAG_UART_ptr = (int *)0xFF201000;// JTAG UART address
-    volatile int * pixel_ctrl_ptr = (int *)0xFF203020;
+  volatile int *JTAG_UART_ptr = (int *)0xFF201000; // JTAG UART address
+  volatile int *pixel_ctrl_ptr = (int *)0xFF203020;
 
-    /* set front pixel buffer to start of FPGA On-chip memory */
-    *(pixel_ctrl_ptr + 1) = 0xC8000000; // first store the address in the 
-                                        // back buffer
-    /* now, swap the front/back buffers, to set the front buffer location */
-    wait_for_vsync();
-    /* initialize a pointer to the pixel buffer, used by drawing functions */
-    pixel_buffer_start = *pixel_ctrl_ptr;
-    clear_screen(); // pixel_buffer_start points to the pixel buffer
-    /* set back pixel buffer to start of SDRAM memory */
-    *(pixel_ctrl_ptr + 1) = 0xC0000000;
-    pixel_buffer_start = *(pixel_ctrl_ptr + 1); // we draw on the back buffer
-    wait_for_vsync();
-    clear_screen();
+  /* set front pixel buffer to start of FPGA On-chip memory */
+  *(pixel_ctrl_ptr + 1) = 0xC8000000; // first store the address in the
+                                      // back buffer
+  /* now, swap the front/back buffers, to set the front buffer location */
+  wait_for_vsync();
+  /* initialize a pointer to the pixel buffer, used by drawing functions */
+  pixel_buffer_start = *pixel_ctrl_ptr;
+  clear_screen(); // pixel_buffer_start points to the pixel buffer
+  /* set back pixel buffer to start of SDRAM memory */
+  *(pixel_ctrl_ptr + 1) = 0xC0000000;
+  pixel_buffer_start = *(pixel_ctrl_ptr + 1); // we draw on the back buffer
+  wait_for_vsync();
+  clear_screen();
 
-    //draw grid box (user controlled grid box)
+  // draw grid box (user controlled grid box)
+
+  // TEST JTAG UART
+  char text_string[] = "\nJTAG UART test\n> \0";
+  char *str, c;
+
+  for (str = text_string; *str != 0; ++str) {
+    put_jtag(JTAG_UART_ptr, *str);
+  }
+
+  // Main program loop, read user inputs while running
+  while (1) {
+    c = get_jtag(JTAG_UART_ptr);
+    if (c != '\0') {
+      put_jtag(JTAG_UART_ptr, c);
+      if (c == 'w') {
+        move_box_y(-GRID_LEN); // move up
+      } else if (c == 'a') {
+        move_box_x(-GRID_LEN); // move left
+      } else if (c == 's') {
+        move_box_y(GRID_LEN); // move down
+      } else if (c == 'd') {
+        move_box_x(GRID_LEN); // move left
+      }
+    }
+
     draw_grid_box(xcurrent, ycurrent, WHITE);
-
-    //TEST JTAG UART
-    char text_string[] = "\nJTAG UART test\n> \0";
-    char *str, c;
-
-    for(str = text_string; *str != 0; ++str){
-        put_jtag(JTAG_UART_ptr,*str);    
-    }
-
-    //Main program loop, read user inputs while running
-    while(1){
-        c = get_jtag(JTAG_UART_ptr);
-        if(c != '\0'){
-            put_jtag(JTAG_UART_ptr, c);
-            if(c == 'w'){
-                move_box_y(-GRID_LEN); //move up 
-            }else if(c == 'a'){
-                move_box_x(-GRID_LEN); //move left
-            }else if(c == 's'){
-                move_box_y(GRID_LEN); //move down
-            }else if(c == 'd'){
-                move_box_x(GRID_LEN); //move left
-            }
-        }
-            
-    }
-
+  }
 }
 
-//moves a 20x20 box around on the screen
-void move_box_x(int direction){
+// moves a 20x20 box around on the screen
+void move_box_x(int direction) {
+	int nextX = direction + xcurrent;
+        xcurrent = (nextX >= RESOLUTION_X || nextX < 0) ? xcurrent : nextX;
 }
 
-void move_box_y(int direction){
-
+void move_box_y(int direction) {
+	int nextY = direction + ycurrent;
+	ycurrent = (nextY >= RESOLUTION_Y || nextY < 0) ? ycurrent : nextY;
 }
 
-void draw_grid_box(int x0, int y0, short int colour){
-    draw_line(x0, y0, x0+(GRID_LEN-1), y0, colour);
-    draw_line(x0, y0, x0, y0 + (GRID_LEN - 1), colour);
-    draw_line(x0 + (GRID_LEN - 1), y0 + (GRID_LEN - 1), x0 + (GRID_LEN - 1), y0,
-              colour);
-    draw_line(x0 + (GRID_LEN - 1), y0 + (GRID_LEN - 1), x0, y0 + (GRID_LEN - 1),
-              colour);
+void draw_grid_box(int x0, int y0, short int colour) {
+  draw_line(x0, y0, x0 + (GRID_LEN - 1), y0, colour);
+  draw_line(x0, y0, x0, y0 + (GRID_LEN - 1), colour);
+  draw_line(x0 + (GRID_LEN - 1), y0 + (GRID_LEN - 1), x0 + (GRID_LEN - 1), y0,
+            colour);
+  draw_line(x0 + (GRID_LEN - 1), y0 + (GRID_LEN - 1), x0, y0 + (GRID_LEN - 1),
+            colour);
 }
 
 // draws a pixel given its location and colour
 void plot_pixel(int x, int y, short int line_color) {
-  if((y>RESOLUTION_Y-1 || y < 0) || (x>RESOLUTION_X-1 || x < 0))
+  if ((y > RESOLUTION_Y - 1 || y < 0) || (x > RESOLUTION_X - 1 || x < 0))
     return;
   *(short int *)(pixel_buffer_start + (y << 10) + (x << 1)) = line_color;
 }
 
-char get_jtag(volatile int * JTAG_UART_ptr){
-    int data;
-    data = *(JTAG_UART_ptr);
-    if(data & 0x00008000) //check RVALID
-        return ((char)data & 0xFF);
-    else
-        return ('\0');
-
+char get_jtag(volatile int *JTAG_UART_ptr) {
+  int data;
+  data = *(JTAG_UART_ptr);
+  if (data & 0x00008000) // check RVALID
+    return ((char)data & 0xFF);
+  else
+    return ('\0');
 }
 
-void put_jtag(volatile int * JTAG_UART_ptr, char c){
-    int control;
-    control = *(JTAG_UART_ptr + 1); //read control reg
-    if(control & 0xFFFF0000){
-        *(JTAG_UART_ptr) = c;
-    }
+void put_jtag(volatile int *JTAG_UART_ptr, char c) {
+  int control;
+  control = *(JTAG_UART_ptr + 1); // read control reg
+  if (control & 0xFFFF0000) {
+    *(JTAG_UART_ptr) = c;
+  }
 }
 
 // draws a line given two points and colour
