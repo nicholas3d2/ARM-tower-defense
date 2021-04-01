@@ -132,6 +132,8 @@ void draw_grid_box(int x0, int y0, short int colour){
 
 // draws a pixel given its location and colour
 void plot_pixel(int x, int y, short int line_color) {
+  if((y>RESOLUTION_Y-1 || y < 0) || (x>RESOLUTION_X-1 || x < 0))
+    return;
   *(short int *)(pixel_buffer_start + (y << 10) + (x << 1)) = line_color;
 }
 
