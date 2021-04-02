@@ -56,6 +56,14 @@ void wait_for_vsync();
 void draw_box(int x, int y, short int line_colour);
 void draw_turret_diamond(int x, int y, short int line_colour);
 void draw_turret_medium(int x, int y, short int colour);
+//path drawing function prototypes
+void draw_path_horizontal(int x, int y, short int colour);
+void draw_path_vertical(int x, int y, short int colour);
+// <Vert Direction>_<Horizontal Direction> (of opening)
+void draw_path_down_right(int x, int y, short int colour);
+void draw_path_down_left(int x, int y, short int colour);
+void draw_path_up_right(int x, int y, short int colour);
+void draw_path_up_left(int x, int y, short int colour);
 
 char get_jtag(volatile int *JTAG_UART_ptr);
 void put_jtag(volatile int *JTAG_UART_ptr, char c);
@@ -316,4 +324,59 @@ void draw_turret_medium(int x, int y, short int colour){
   plot_pixel(x+14, y+12, colour);
   plot_pixel(x+14, y+13, colour);
 
+}
+// drawing path
+void draw_path_horizontal(int x, int y, short int colour){
+	draw_line(x, y+3, x+19, y+3, colour);
+	draw_line(x, y+16, x+19, y+16, colour);
+	plot_pixel(x + 6, y + 6, YELLOW);
+	plot_pixel(x+15, y+9, YELLOW);
+	plot_pixel(x+3, y+3, YELLOW);
+}
+
+void draw_path_vertical(int x, int y, short int colour){
+	draw_line(x+3, y, x+3, y+19, colour);
+	draw_line(x+16, y, x+16, y+19, colour);
+	plot_pixel(x+6, y+3, YELLOW);
+	plot_pixel(x+12, y+7, YELLOW);
+	plot_pixel(x+8, y+13, YELLOW);
+	plot_pixel(x+13, y+18, YELLOW);
+}
+void draw_path_down_right(int x, int y, short int colour){
+	draw_line(x+3, y+3, x+19, y+3, colour);
+	draw_line(x+3, y+4, x+3, y+19, colour);
+	draw_line(x+16, y+16, x+19, y+16, colour);
+	draw_line(x+16, y+17, x+16, y+19, colour);
+	plot_pixel(x+13, y+7, YELLOW);
+	plot_pixel(x+8, y+12, YELLOW);
+	plot_pixel(x+13, y+18, YELLOW);
+}
+void draw_path_down_left(int x, int y, short int colour){
+  draw_line(x , y + 3, x + 16, y + 3, colour);
+  draw_line(x + 16, y + 4, x + 16, y + 19, colour);
+  draw_line(x + 3, y + 16, x , y + 16, colour);
+  draw_line(x + 3, y + 17, x + 3, y + 19, colour);
+  plot_pixel(x+3, y+8, YELLOW);
+  plot_pixel(x + 13, y + 7, YELLOW);
+  plot_pixel(x + 8, y + 12, YELLOW);
+  plot_pixel(x + 13, y + 18, YELLOW);
+}
+void draw_path_up_right(int x, int y, short int colour){
+  draw_line(x + 3, y + 16, x + 19, y + 16, colour);
+  draw_line(x + 3, y + 15, x + 3, y , colour);
+  draw_line(x + 16, y + 3, x + 19, y + 4, colour);
+  draw_line(x + 16, y + 0, x + 16, y + 2, colour);
+  plot_pixel(x + 7, y + 2, YELLOW);
+  plot_pixel(x + 11, y + 12, YELLOW);
+  plot_pixel(x + 17, y + 7, YELLOW);
+}
+void draw_path_up_left(int x, int y, short int colour){
+	draw_line(x, y + 16, x + 16, y + 16, colour);
+	draw_line(x + 16, y + 0, x + 16, y + 15, colour);
+	draw_line(x + 3, y + 3, x, y + 3, colour);
+	draw_line(x + 3, y + 0, x + 3, y + 2, colour);
+	plot_pixel(x + 3, y + 8, YELLOW);
+	plot_pixel(x + 13, y + 7, YELLOW);
+	plot_pixel(x + 8, y + 12, YELLOW);
+	plot_pixel(x+10, y+2, YELLOW);
 }
