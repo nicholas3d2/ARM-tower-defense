@@ -55,6 +55,7 @@ void clear_screen();
 void wait_for_vsync();
 void draw_box(int x, int y, short int line_colour);
 void draw_turrent_diamon(int x, int y, short int line_colour);
+void draw_turret_medium(int x, int y, short int colour);
 
 char get_jtag(volatile int *JTAG_UART_ptr);
 void put_jtag(volatile int *JTAG_UART_ptr, char c);
@@ -105,12 +106,14 @@ int main(void) {
   // Main program loop, read user inputs while running
   while (1) {
     // clear 2 frames before
-    draw_turrent_diamon(xprev2, yprev2, 0);
+    draw_turret_medium(xprev1, yprev2, 0);
+    //draw_turrent_diamon(xprev2, yprev2, 0);
     draw_grid_box(xprev2, yprev2, 0);
 
     // draw
     draw_grid_box(xcurrent, ycurrent, WHITE);
-    draw_turrent_diamon(xcurrent, ycurrent, WHITE);
+    //draw_turrent_diamon(xcurrent, ycurrent, WHITE);
+    draw_turret_medium(xcurrent, ycurrent, WHITE);
     // update position
     xprev2 = xprev1;
     yprev2 = yprev1;
@@ -255,4 +258,39 @@ void draw_turrent_diamond(int x, int y, short int line_colour) {
   draw_line(x + 3, y + 10, x + 9, y + 16, line_colour);
   draw_line(x + 10, y + 16, x + 16, y + 10, line_colour); // bottom right edges
   draw_line(x + 10, y + 17, x + 17, y + 10, line_colour);
+}
+
+void draw_turret_medium(int x, int y, short int colour){
+  for(int i = x+3; i < GRID_LEN-3; i++){
+    for(int j = y + 2; j < GRID_LEN - 2; j++){
+      plot_pixel(i,j,colour);
+    }
+  }
+  plot_pixel(x+7, y+2, 0);
+  plot_pixel(x+7, y+3, 0);
+  plot_pixel(x+12, y+2, 0);
+  plot_pixel(x+12, y+3, 0);
+
+  for(int i = x+3; i < x+6; i++){
+    for(int j = y+6; j < y+14; j++){
+      plot_pixel(i,j,0);  
+    }
+  }
+
+  plot_pixel(x+5, y+6, colour);
+  plot_pixel(x+5, y+11, colour);
+  plot_pixel(x+5, y+12, colour);
+  plot_pixel(x+5, y+13, colour);
+
+  for(int i = x+14; i < x+17; i++){
+    for(int j = y+6; j < y+14; j++){
+      plot_pixel(i,j,0);  
+    }
+  }
+
+  plot_pixel(x+14, y+6, colour);
+  plot_pixel(x+14, y+11, colour);
+  plot_pixel(x+14, y+12, colour);
+  plot_pixel(x+14, y+13, colour);
+
 }
