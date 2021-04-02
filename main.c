@@ -82,7 +82,7 @@ int xprev2 = 0;
 int yprev2 = 0;
 
 // Grid Elements
-enum gridElements {
+typedef enum{
   Empty,
   Light,				//Towers
   Medium,
@@ -95,7 +95,7 @@ enum gridElements {
   Path_Right_Down,       // --> moves right, then down
                          //  |
                          // \/
-  Path_Right_Up,         // 	  ^ moves right then up
+  Path_Right_Up,         //    ^ moves right then up
                          // -->|
   Path_Down_Right,
   Path_Down_Left,
@@ -103,6 +103,22 @@ enum gridElements {
   Path_Left_Down,
   Path_Up_Right,
   Path_Up_Left
+}GridElements;
+
+GridElements Grid[16][12] = 
+{
+	{Empty , Empty, Path_Vertical_Down , Empty, Empty , Empty, Empty , Empty,Empty , Empty, Empty , Empty, Empty , Empty, Empty , Empty},
+	{Empty , Empty, Path_Vertical_Down , Empty, Empty , Empty, Empty , Empty,Empty , Empty, Empty , Empty, Empty , Empty, Empty , Empty},
+	{Empty , Empty, Path_Vertical_Down , Empty, Empty , Empty, Empty , Empty,Empty , Path_Up_Right, Path_Horizontal_Right , Path_Horizontal_Right, Path_Horizontal_Right , Path_Right_Down, Empty , Empty},
+	{Empty , Empty, Path_Vertical_Down , Empty, Empty , Empty, Empty , Empty,Empty , Path_Vertical_Up, Empty , Empty, Empty , Path_Vertical_Down, Empty , Empty},
+	{Empty , Empty, Path_Vertical_Down , Empty, Empty , Empty, Empty , Empty,Empty , Path_Vertical_Up, Empty , Empty, Empty , Path_Vertical_Down, Empty , Empty},
+	{Empty , Empty, Path_Vertical_Down , Empty, Empty , Empty, Empty , Empty,Empty , Path_Vertical_Up, Empty , Empty, Empty , Path_Vertical_Down, Empty , Empty},
+	{Empty , Empty, Path_Vertical_Down , Empty, Empty , Empty, Empty , Empty,Empty , Path_Vertical_Up, Empty , Empty, Empty , Path_Vertical_Down, Empty , Empty},
+	{Empty , Empty, Path_Down_Right , Path_Horizontal_Right, Path_Horizontal_Right , Path_Horizontal_Right, Path_Horizontal_Right , Path_Horizontal_Right ,Path_Horizontal_Right , Path_Right_Up, Empty , Empty, Empty , Path_Vertical_Down, Empty , Empty},
+	{Empty , Empty, Empty , Empty, Empty , Empty, Empty , Empty,Empty , Empty, Empty , Empty, Empty , Path_Vertical_Down, Empty , Empty},
+	{Empty , Empty, Empty , Empty, Empty , Empty, Empty , Empty,Empty , Empty, Empty , Empty, Empty , Path_Vertical_Down, Empty , Empty},
+	{Empty , Empty, Empty , Empty, Empty , Empty, Empty , Empty,Empty , Empty, Empty , Empty, Empty , Path_Vertical_Down, Empty , Empty},
+	{Empty , Empty, Empty , Empty, Empty , Empty, Empty , Empty,Empty , Empty, Empty , Empty, Empty , Path_Vertical_Down, Empty , Empty}
 };
 /************main.h************/
 
