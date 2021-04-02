@@ -73,6 +73,29 @@ int yprev1 = 0;
 int xprev2 = 0;
 int yprev2 = 0;
 
+// Grid Elements
+enum gridElements {
+  Empty,
+  Light,				//Towers
+  Medium,
+  Heavy,
+  //Path
+  Path_Horizontal_Left,  // <--- enemy moves left
+  Path_Horizontal_Right, // --->	enemy moves right
+  Path_Vertical_Up,      //	 |^ enemy moves up   the grid
+  Path_Vertical_Down,    //  |_	enemy moves down the grid
+  Path_Right_Down,       // --> moves right, then down
+                         //  |
+                         // \/
+  Path_Right_Up,         // 	  ^ moves right then up
+                         // -->|
+  Path_Down_Right,
+  Path_Down_Left,
+  Path_Left_Up,
+  Path_Left_Down,
+  Path_Up_Right,
+  Path_Up_Left
+};
 /************main.h************/
 
 int main(void) {
