@@ -38,9 +38,12 @@
 
 /* Constants for animation */
 #define GRID_LEN 20
+#define GRID_WIDTH 16
+#define GRID_HEIGHT 12
 #define BOX_LEN 2
 #define NUM_BOXES 8
 
+#define PATH_COLOUR 0x07E0
 #define FALSE 0
 #define TRUE 1
 
@@ -65,6 +68,9 @@ void draw_path_down_left(int x, int y, short int colour);
 void draw_path_up_right(int x, int y, short int colour);
 void draw_path_up_left(int x, int y, short int colour);
 
+//draw Grid
+void draw_grid();
+void clear_grid();
 char get_jtag(volatile int *JTAG_UART_ptr);
 void put_jtag(volatile int *JTAG_UART_ptr, char c);
 
@@ -105,7 +111,7 @@ typedef enum{
   Path_Up_Left
 }GridElements;
 
-GridElements Grid[16][12] = 
+GridElements Grid[12][16] = 
 {
 	{Empty , Empty, Path_Vertical_Down , Empty, Empty , Empty, Empty , Empty,Empty , Empty, Empty , Empty, Empty , Empty, Empty , Empty},
 	{Empty , Empty, Path_Vertical_Down , Empty, Empty , Empty, Empty , Empty,Empty , Empty, Empty , Empty, Empty , Empty, Empty , Empty},
@@ -153,11 +159,12 @@ int main(void) {
   // Main program loop, read user inputs while running
   while (1) {
     // clear 2 frames before
-    draw_turret_medium(xprev1, yprev2, 0);
+    draw_turret_medium(xprev2, yprev2, 0);
     //draw_turret_diamond(xprev2, yprev2, 0);
     draw_grid_box(xprev2, yprev2, 0);
 
     // draw
+	draw_grid();
     draw_grid_box(xcurrent, ycurrent, WHITE);
     //draw_turret_diamond(xcurrent, ycurrent, WHITE);
     draw_turret_medium(xcurrent, ycurrent, WHITE);
@@ -395,4 +402,42 @@ void draw_path_up_left(int x, int y, short int colour){
 	plot_pixel(x + 13, y + 7, YELLOW);
 	plot_pixel(x + 8, y + 12, YELLOW);
 	plot_pixel(x+10, y+2, YELLOW);
+}
+void draw_grid(){
+	for(int x = 0; x < GRID_WIDTH; x++){
+		for(int y = 0; y < GRID_HEIGHT; y++){
+			switch (Grid[y][x]){
+				//need to add
+				case Empty: break;
+				case Light:	break;		
+				case Medium:break;
+				case Heavy: break;
+				
+				case Path_Horizontal_Left:  
+				case Path_Horizontal_Right: 
+					draw_path_horizontal(GRID_LEN * x, GRID_LEN * y, PATH_COLOUR);
+					break;
+				case Path_Vertical_Up: 
+				case Path_Vertical_Down:   
+					draw_path_vertical(GRID_LEN * x, GRID_LEN * y, PATH_COLOUR);
+					break;
+				case Path_Right_Down:  
+				case Path_Up_Left:
+					draw_path_down_left(GRID_LEN * x, GRID_LEN * y, PATH_COLOUR);  
+					break; 
+				case Path_Right_Up: 
+				case Path_Down_Left:  
+					draw_path_up_left(GRID_LEN * x, GRID_LEN * y, PATH_COLOUR);  
+					break;
+				case Path_Down_Right:
+				case Path_Left_Up:
+					draw_path_up_right(GRID_LEN * x, GRID_LEN * y, PATH_COLOUR);  
+					break;
+				case Path_Left_Down:
+				case Path_Up_Right:
+					draw_path_down_right(GRID_LEN * x, GRID_LEN * y, PATH_COLOUR);  
+				default: break;
+			}
+		}
+	}
 }
