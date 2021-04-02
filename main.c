@@ -261,8 +261,8 @@ void draw_turrent_diamond(int x, int y, short int line_colour) {
 }
 
 void draw_turret_medium(int x, int y, short int colour){
-  for(int i = x+3; i < GRID_LEN-3; i++){
-    for(int j = y + 2; j < GRID_LEN - 2; j++){
+  for(int i = x+3; i < x+17; i++){
+    for(int j = y + 2; j < y+18; j++){
       plot_pixel(i,j,colour);
     }
   }
