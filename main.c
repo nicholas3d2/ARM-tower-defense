@@ -48,11 +48,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// function prototypes
 void plot_pixel(int x, int y, short int line_color);
 void draw_line(int x0, int y0, int x1, int y1, short int line_color);
 void clear_screen();
 void wait_for_vsync();
 void draw_box(int x, int y, short int line_colour);
+void draw_diamond(int x, int y, short int line_colour);
 
 char get_jtag(volatile int *JTAG_UART_ptr);
 void put_jtag(volatile int *JTAG_UART_ptr, char c);
@@ -103,12 +105,12 @@ int main(void) {
   // Main program loop, read user inputs while running
   while (1) {
     // clear 2 frames before
-
+    draw_diamond(xprev2, yprev2, 0);
     draw_grid_box(xprev2, yprev2, 0);
-	
+
     // draw
     draw_grid_box(xcurrent, ycurrent, WHITE);
-
+    draw_diamond(xcurrent, ycurrent, WHITE);
     // update position
     xprev2 = xprev1;
     yprev2 = yprev1;
@@ -241,4 +243,16 @@ void draw_box(int x, int y, short int line_colour) {
   for (int x0 = x; x0 <= x + BOX_LEN; x0++) {
     draw_line(x0, y, x0, y + BOX_LEN, line_colour);
   }
+}
+
+// draws the diamond for a 20x20 box
+void draw_diamond(int x, int y, short int line_colour) {
+  draw_line(x + 9, y + 2, x + 2, y + 9, line_colour); // top left edges
+  draw_line(x + 9, y + 3, x + 3, y + 9, line_colour);
+  draw_line(x + 10, y + 2, x + 17, y + 9, line_colour); // top right edges
+  draw_line(x + 10, y + 3, x + 16, y + 9, line_colour);
+  draw_line(x + 2, y + 10, x + 9, y + 17, line_colour); // bottom left edges
+  draw_line(x + 3, y + 10, x + 9, y + 16, line_colour);
+  draw_line(x + 10, y + 16, x + 16, y + 10, line_colour); // bottom right edges
+  draw_line(x + 10, y + 17, x + 17, y + 10, line_colour);
 }
