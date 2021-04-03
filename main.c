@@ -194,8 +194,9 @@ int main(void) {
 	// Main program loop, read user inputs while running
 	while (1) {
     //update score on HEX3-0
-    *HEX3_0_ptr = seg7[points & 0xF] | seg7[points >> 4 & 0xF] << 8 | seg7[points >> 8 & 0xF] << 16 | seg7[points >> 16 & 0xF] << 24;
-    *HEX5_4_ptr = seg7[points >> 16 & 0xF] | seg7[points >> 24 & 0xF] << 8;
+    *HEX3_0_ptr = seg7[points % 10 & 0xF] | seg7[(points/10)%10 & 0xF] << 8 
+    | seg7[(points/100)%10 & 0xF] << 16 | seg7[(points/1000)%10 & 0xF] << 24;
+    *HEX5_4_ptr = seg7[(points/10000)%10 & 0xF] | seg7[(points/100000)%10 & 0xF] << 8;
 		// clear 2 frames before
 		//draw_turret_diamond(xprev2, yprev2, 0);
 		draw_grid_box(xprev2, yprev2, 0);
