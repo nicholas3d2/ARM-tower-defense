@@ -200,7 +200,7 @@ int main(void) {
 		yprev1 = ycurrent;
 
 		if(key_dir!=0)
-			
+			placeOrUpgradeTower();
 		c = get_jtag(JTAG_UART_ptr);
 		if (c != '\0') {
 			put_jtag(JTAG_UART_ptr, c);
@@ -542,9 +542,15 @@ void draw_grid(){
 			switch (Grid[y][x]){
 				//need to add
 				case Empty: break;
-				case Light:	break;		
-				case Medium:break;
-				case Heavy: break;
+				case Light:	
+					draw_turret_light(x*GRID_LEN, y*GRID_LEN, WHITE);
+					break;		
+				case Medium:
+					draw_turret_medium(x*GRID_LEN, y*GRID_LEN, WHITE);
+					break;
+				case Heavy: 
+					draw_turret_heavy(x*GRID_LEN, y*GRID_LEN, WHITE);
+					break;
 				
 				case Path_Horizontal_Left:  
 				case Path_Horizontal_Right: 
