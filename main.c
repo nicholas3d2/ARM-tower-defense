@@ -51,6 +51,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "interrupt.h"
 
 // function prototypes
 void plot_pixel(int x, int y, short int line_color);
@@ -134,6 +135,9 @@ GridElements Grid[12][16] =
 	{Empty , Empty, Empty , Empty, Empty , Empty, Empty , Empty,Empty , Empty, Empty , Empty, Empty , Path_Vertical_Down, Empty , Empty},
 	{Empty , Empty, Empty , Empty, Empty , Empty, Empty , Empty,Empty , Empty, Empty , Empty, Empty , Path_Vertical_Down, Empty , Empty}
 };
+
+// Interrupt KEY
+volatile int key_dir = 0;
 /************main.h************/
 
 int main(void) {
@@ -153,6 +157,13 @@ int main(void) {
 	pixel_buffer_start = *(pixel_ctrl_ptr + 1); // we draw on the back buffer
 	wait_for_vsync();
 	clear_screen();
+
+	// Setting up interrupts
+	set_A9_IRQ_stack();      // initialize the stack pointer for IRQ mode
+	config_GIC();            // configure the general interrupt controller
+	// interrupts
+	config_KEYs();          // configure pushbutton KEYs to generate interrupts
+	enable_A9_interrupts(); // enable interrupts
 
 	// draw grid box (user controlled grid box)
 
