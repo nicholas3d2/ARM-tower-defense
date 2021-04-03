@@ -608,19 +608,22 @@ void placeOrUpgradeTower(){
 	GridElements currentlySelected = Grid[ycurrent / GRID_LEN][xcurrent/GRID_LEN];
 	switch (key_dir) {
 		case 1: // purchase light tower
-			if (currentlySelected == 0)
+			if (currentlySelected == 0 && points >= 25)
 			{
 				Grid[ycurrent / GRID_LEN][xcurrent/GRID_LEN] = Light;
+        points -= 25;
 			}
 			break;
 		case 2:
-			if (currentlySelected == 0) {
+			if (currentlySelected == 0 && points >= 50) {
 				Grid[ycurrent / GRID_LEN][xcurrent / GRID_LEN] = Medium;
+        points -= 50;
 			}
 			break;
 		case 3:
-			if (currentlySelected == 0) {
+			if (currentlySelected == 0 && points >= 100) {
 				Grid[ycurrent / GRID_LEN][xcurrent / GRID_LEN] = Heavy;
+        points -= 100;
 			}
 			break;
 		case 4:									// upgrade
