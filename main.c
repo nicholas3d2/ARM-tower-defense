@@ -101,7 +101,11 @@ int xprev2 = 0;
 int yprev2 = 0;
 
 // Health
-int health = 10;
+int health = 10; //starting value
+
+// Points
+int points = 100; //starting value
+
 // Grid Elements
 typedef enum{
   Empty,
@@ -142,6 +146,8 @@ GridElements Grid[12][16] =
 	{Empty , Empty, Empty , Empty, Empty , Empty, Empty , Empty,Empty , Empty, Empty , Empty, Empty , Path_Vertical_Down, Empty , Empty}
 };
 
+char seg7[] = {0x3f, 0x06, 0x5B, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x67};
+
 // Interrupt KEY
 volatile int key_dir = 0;
 /************main.h************/
@@ -149,6 +155,7 @@ volatile int key_dir = 0;
 int main(void) {
 	volatile int *JTAG_UART_ptr = (int *)0xFF201000; // JTAG UART address
 	volatile int *pixel_ctrl_ptr = (int *)0xFF203020;
+  volatile int *HEX3_0_ptr = (int *)HEX3_HEX0_BASE;
 
 	/* set front pixel buffer to start of FPGA On-chip memory */
 	*(pixel_ctrl_ptr + 1) = 0xC8000000; // first store the address in the
@@ -185,6 +192,9 @@ int main(void) {
 	updateHealthToLEDR();
 	// Main program loop, read user inputs while running
 	while (1) {
+    //update score on HEX3-0
+    *HEX3_0_ptr = seg7[points & 0xF] | seg7[points >> 4 & 0xF] << 8 | seg7[points >> 8 & 0xF] << 16;
+
 		// clear 2 frames before
 		//draw_turret_diamond(xprev2, yprev2, 0);
 		draw_grid_box(xprev2, yprev2, 0);
