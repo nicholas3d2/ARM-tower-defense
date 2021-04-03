@@ -50,6 +50,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 // function prototypes
 void plot_pixel(int x, int y, short int line_color);
@@ -68,6 +69,9 @@ void draw_path_down_left(int x, int y, short int colour);
 void draw_path_up_right(int x, int y, short int colour);
 void draw_path_up_left(int x, int y, short int colour);
 
+// health related functions
+void updateHealthToLEDR();
+void loseHealth();
 //draw Grid
 void draw_grid();
 void clear_grid();
@@ -87,6 +91,8 @@ int yprev1 = 0;
 int xprev2 = 0;
 int yprev2 = 0;
 
+// Health
+int health = 10;
 // Grid Elements
 typedef enum{
   Empty,
@@ -129,69 +135,81 @@ GridElements Grid[12][16] =
 /************main.h************/
 
 int main(void) {
-  volatile int *JTAG_UART_ptr = (int *)0xFF201000; // JTAG UART address
-  volatile int *pixel_ctrl_ptr = (int *)0xFF203020;
+	volatile int *JTAG_UART_ptr = (int *)0xFF201000; // JTAG UART address
+	volatile int *pixel_ctrl_ptr = (int *)0xFF203020;
 
-  /* set front pixel buffer to start of FPGA On-chip memory */
-  *(pixel_ctrl_ptr + 1) = 0xC8000000; // first store the address in the
-                                      // back buffer
-  /* now, swap the front/back buffers, to set the front buffer location */
-  wait_for_vsync();
-  /* initialize a pointer to the pixel buffer, used by drawing functions */
-  pixel_buffer_start = *pixel_ctrl_ptr;
-  clear_screen(); // pixel_buffer_start points to the pixel buffer
-  /* set back pixel buffer to start of SDRAM memory */
-  *(pixel_ctrl_ptr + 1) = 0xC0000000;
-  pixel_buffer_start = *(pixel_ctrl_ptr + 1); // we draw on the back buffer
-  wait_for_vsync();
-  clear_screen();
+	/* set front pixel buffer to start of FPGA On-chip memory */
+	*(pixel_ctrl_ptr + 1) = 0xC8000000; // first store the address in the
+										// back buffer
+	/* now, swap the front/back buffers, to set the front buffer location */
+	wait_for_vsync();
+	/* initialize a pointer to the pixel buffer, used by drawing functions */
+	pixel_buffer_start = *pixel_ctrl_ptr;
+	clear_screen(); // pixel_buffer_start points to the pixel buffer
+	/* set back pixel buffer to start of SDRAM memory */
+	*(pixel_ctrl_ptr + 1) = 0xC0000000;
+	pixel_buffer_start = *(pixel_ctrl_ptr + 1); // we draw on the back buffer
+	wait_for_vsync();
+	clear_screen();
 
-  // draw grid box (user controlled grid box)
+	// draw grid box (user controlled grid box)
 
-  // TEST JTAG UART
-  char text_string[] = "\nJTAG UART test\n> \0";
-  char *str, c;
+	// TEST JTAG UART
+	char text_string[] = "\nJTAG UART test\n> \0";
+	char *str, c;
+		
+	for (str = text_string; *str != 0; ++str) {
+		put_jtag(JTAG_UART_ptr, *str);
+	}
 
-  for (str = text_string; *str != 0; ++str) {
-    put_jtag(JTAG_UART_ptr, *str);
-  }
+	// initialize health
+	updateHealthToLEDR();
+	// Main program loop, read user inputs while running
+	while (1) {
+		// clear 2 frames before
+		draw_turret_medium(xprev2, yprev2, 0);
+		//draw_turret_diamond(xprev2, yprev2, 0);
+		draw_grid_box(xprev2, yprev2, 0);
 
-  // Main program loop, read user inputs while running
-  while (1) {
-    // clear 2 frames before
-    draw_turret_medium(xprev2, yprev2, 0);
-    //draw_turret_diamond(xprev2, yprev2, 0);
-    draw_grid_box(xprev2, yprev2, 0);
+		// draw
+		draw_grid();
+		draw_grid_box(xcurrent, ycurrent, WHITE);
+		//draw_turret_diamond(xcurrent, ycurrent, WHITE);
+		draw_turret_medium(xcurrent, ycurrent, WHITE);
+		// update position
+		xprev2 = xprev1;
+		yprev2 = yprev1;
 
-    // draw
-	draw_grid();
-    draw_grid_box(xcurrent, ycurrent, WHITE);
-    //draw_turret_diamond(xcurrent, ycurrent, WHITE);
-    draw_turret_medium(xcurrent, ycurrent, WHITE);
-    // update position
-    xprev2 = xprev1;
-    yprev2 = yprev1;
+		xprev1 = xcurrent;
+		yprev1 = ycurrent;
 
-    xprev1 = xcurrent;
-    yprev1 = ycurrent;
+		c = get_jtag(JTAG_UART_ptr);
+		if (c != '\0') {
+			put_jtag(JTAG_UART_ptr, c);
+			if (c == 'w') {
+				move_box_y(-GRID_LEN); // move up
+			} else if (c == 'a') {
+				move_box_x(-GRID_LEN); // move left
+			} else if (c == 's') {
+				move_box_y(GRID_LEN); // move down
+			} else if (c == 'd') {
+				move_box_x(GRID_LEN); // move left
+			} else if (c == 'e')
+				loseHealth();
+		}
 
-    c = get_jtag(JTAG_UART_ptr);
-    if (c != '\0') {
-      put_jtag(JTAG_UART_ptr, c);
-      if (c == 'w') {
-        move_box_y(-GRID_LEN); // move up
-      } else if (c == 'a') {
-        move_box_x(-GRID_LEN); // move left
-      } else if (c == 's') {
-        move_box_y(GRID_LEN); // move down
-      } else if (c == 'd') {
-        move_box_x(GRID_LEN); // move left
-      }
-    }
+		wait_for_vsync();
+		pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
 
-    wait_for_vsync();
-    pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
-  }
+		// game over if no health left, exits the program
+		if(health == 0){	
+			char game_over[] = "\nGame Over\n> \0";
+			for (str = game_over; *str != 0; ++str) {
+				put_jtag(JTAG_UART_ptr, *str);
+			}
+			break;
+		}
+	}
 }
 
 // moves a 20x20 box around on the screen
@@ -440,4 +458,13 @@ void draw_grid(){
 			}
 		}
 	}
+}
+// health related functions
+void updateHealthToLEDR(){
+	volatile int *LEDR = (int *)LEDR_BASE;
+	*LEDR = ((int)pow(2, health))-1 & 0b1111111111;
+}
+void loseHealth(){
+	health--;
+	updateHealthToLEDR();
 }
