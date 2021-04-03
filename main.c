@@ -538,9 +538,25 @@ void placeOrUpgradeTower(){
 			{
 				Grid[ycurrent / GRID_LEN][xcurrent/GRID_LEN] = Light;
 			}
-			
+			break;
+		case 2:
+			if (currentlySelected == 0) {
+				Grid[ycurrent / GRID_LEN][xcurrent / GRID_LEN] = Medium;
+			}
+			break;
+		case 3:
+			if (currentlySelected == 0) {
+				Grid[ycurrent / GRID_LEN][xcurrent / GRID_LEN] = Heavy;
+			}
+			break;
+		case 4:									// upgrade
+			// if (currentlySelected == 0) {
+			// 	Grid[ycurrent / GRID_LEN][xcurrent / GRID_LEN] = Heavy;
+			// }
+			break;
 		default:
-		break;
+			break;
 	}
-	key_dir = 0
+	key_dir = 0;
+	return;
 }

@@ -134,6 +134,8 @@ void config_HPS_GPIO1(void);
 void config_interval_timer(void);
 void config_KEYs(void);
 void enable_A9_interrupts(void);
+void __attribute__((interrupt)) __cs3_isr_irq(void);
+
 /* key_dir is written by interrupt service routine; we have to
  * declare these as volatile to avoid the compiler caching their values in
  * registers */
@@ -215,5 +217,19 @@ void pushbutton_ISR(void) {
     else if (press == 0b1000) // KEY1 pressed
       key_dir = 4;
     printf("%d", press);
+    return;
+}
+void __attribute__((interrupt)) __cs3_isr_irq(void) {
+    // Read the ICCIAR from the processor interface
+    int address = MPCORE_GIC_CPUIF + ICCIAR;
+    int int_ID = *((int *)address);
+    if (int_ID == KEYS_IRQ) // check if interrupt is from the KEYs
+        pushbutton_ISR();
+    else
+        while (1)
+        ; // if unexpected, then stay here
+    // Write to the End of Interrupt Register (ICCEOIR)
+    address = MPCORE_GIC_CPUIF + ICCEOIR;
+    *((int *)address) = int_ID;
     return;
 }
