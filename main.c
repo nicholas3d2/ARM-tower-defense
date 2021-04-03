@@ -59,7 +59,9 @@ void clear_screen();
 void wait_for_vsync();
 void draw_box(int x, int y, short int line_colour);
 void draw_turret_diamond(int x, int y, short int line_colour);
+void draw_turret_light(int x, int y, short int colour);
 void draw_turret_medium(int x, int y, short int colour);
+void draw_turret_heavy(int x, int y, short int colour);
 //path drawing function prototypes
 void draw_path_horizontal(int x, int y, short int colour);
 void draw_path_vertical(int x, int y, short int colour);
@@ -167,7 +169,7 @@ int main(void) {
 	// Main program loop, read user inputs while running
 	while (1) {
 		// clear 2 frames before
-		draw_turret_medium(xprev2, yprev2, 0);
+		draw_turret_light(xprev2, yprev2, 0);
 		//draw_turret_diamond(xprev2, yprev2, 0);
 		draw_grid_box(xprev2, yprev2, 0);
 
@@ -175,7 +177,7 @@ int main(void) {
 		draw_grid();
 		draw_grid_box(xcurrent, ycurrent, WHITE);
 		//draw_turret_diamond(xcurrent, ycurrent, WHITE);
-		draw_turret_medium(xcurrent, ycurrent, WHITE);
+		draw_turret_light(xcurrent, ycurrent, WHITE);
 		// update position
 		xprev2 = xprev1;
 		yprev2 = yprev1;
@@ -332,6 +334,45 @@ void draw_turret_diamond(int x, int y, short int line_colour) {
   draw_line(x + 10, y + 17, x + 17, y + 10, line_colour);
 }
 
+
+void draw_turret_light(int x, int y, short int colour){
+  for(int i = x+5; i < x+15; i++){
+    for(int j = y+3; j < y+18; j++){
+      plot_pixel(i,j,colour);
+    }
+  }
+  plot_pixel(x+5, y+3, 0);
+  plot_pixel(x+6, y+3, 0);
+  plot_pixel(x+7, y+3, 0);
+  plot_pixel(x+12, y+3, 0);
+  plot_pixel(x+13, y+3, 0);
+  plot_pixel(x+14, y+3, 0);
+
+  plot_pixel(x+5, y+4, 0);
+  plot_pixel(x+6, y+4, 0);
+  plot_pixel(x+13, y+4, 0);
+  plot_pixel(x+14, y+4, 0);
+
+  plot_pixel(x+5, y+5, 0);
+  plot_pixel(x+14, y+5, 0);
+
+  for(int i = x+7; i < x+13; i++){
+    for(int j = y+8; j < y+11; j++){
+      plot_pixel(i, j, 0);
+    }
+  }
+
+  plot_pixel(x+5, y+8, 0);
+  plot_pixel(x+5, y+9, 0);
+  plot_pixel(x+5, y+10, 0);
+
+  plot_pixel(x+14, y+8, 0);
+  plot_pixel(x+14, y+9, 0);
+  plot_pixel(x+14, y+10, 0);
+
+}
+
+
 void draw_turret_medium(int x, int y, short int colour){
   for(int i = x+3; i < x+17; i++){
     for(int j = y + 2; j < y+18; j++){
@@ -366,6 +407,11 @@ void draw_turret_medium(int x, int y, short int colour){
   plot_pixel(x+14, y+13, colour);
 
 }
+
+void draw_turret_heavy(int x, int y, short int colour){
+
+}
+
 // drawing path
 void draw_path_horizontal(int x, int y, short int colour){
 	draw_line(x, y+3, x+19, y+3, colour);
