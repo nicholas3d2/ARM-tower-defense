@@ -84,6 +84,9 @@ void placeOrUpgradeTower();
 char get_jtag(volatile int *JTAG_UART_ptr);
 void put_jtag(volatile int *JTAG_UART_ptr, char c);
 
+// drawing circles
+void circleBres(int xc, int yc, int r, short int colour);		//xc = current x
+void drawCircle(int xc, int yc, int x, int y, short int colour); 
 volatile int pixel_buffer_start; // global variable
 // location of user's grid box
 int xcurrent = 0;
@@ -185,10 +188,11 @@ int main(void) {
 		// clear 2 frames before
 		//draw_turret_diamond(xprev2, yprev2, 0);
 		draw_grid_box(xprev2, yprev2, 0);
-
+		circleBres(xprev2+10, yprev2+10, 40, 0);
 		// draw
 		draw_grid();
 		draw_grid_box(xcurrent, ycurrent, WHITE);
+		circleBres(xcurrent+10, ycurrent+10, 40, ORANGE);
 		//draw_turret_diamond(xcurrent, ycurrent, WHITE);
 
 		// update position
@@ -617,4 +621,40 @@ void placeOrUpgradeTower(){
 	}
 	key_dir = 0;
 	return;
+}
+// Function to put pixels
+// at subsequence points
+void drawCircle(int xc, int yc, int x, int y, short int colour) {
+  plot_pixel(xc + x, yc + y, colour);
+  plot_pixel(xc - x, yc + y, colour);
+  plot_pixel(xc + x, yc - y, colour);
+  plot_pixel(xc - x, yc - y, colour);
+  plot_pixel(xc + y, yc + x, colour);
+  plot_pixel(xc - y, yc + x, colour);
+  plot_pixel(xc + y, yc - x, colour);
+  plot_pixel(xc - y, yc - x, colour);
+}
+
+// Function for circle-generation
+// using Bresenham's algorithm
+void circleBres(int xc, int yc, int r, short int colour) {
+  int x = 0, y = r;
+  int d = 3 - 2 * r;
+  drawCircle(xc, yc, x, y, colour);
+  while (y >= x) {
+    // for each pixel we will
+    // draw all eight pixels
+
+    x++;
+
+    // check for decision parameter
+    // and correspondingly
+    // update d, x, y
+    if (d > 0) {
+      y--;
+      d = d + 4 * (x - y) + 10;
+    } else
+      d = d + 4 * x + 6;
+    drawCircle(xc, yc, x, y, colour);
+  }
 }
