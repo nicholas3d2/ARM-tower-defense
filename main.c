@@ -78,6 +78,9 @@ void loseHealth();
 //draw Grid
 void draw_grid();
 void clear_grid();
+
+// placing and upgrading towers
+void placeOrUpgradeTower();
 char get_jtag(volatile int *JTAG_UART_ptr);
 void put_jtag(volatile int *JTAG_UART_ptr, char c);
 
@@ -196,6 +199,8 @@ int main(void) {
 		xprev1 = xcurrent;
 		yprev1 = ycurrent;
 
+		if(key_dir!=0)
+			
 		c = get_jtag(JTAG_UART_ptr);
 		if (c != '\0') {
 			put_jtag(JTAG_UART_ptr, c);
@@ -524,4 +529,18 @@ void updateHealthToLEDR(){
 void loseHealth(){
 	health--;
 	updateHealthToLEDR();
+}
+void placeOrUpgradeTower(){
+	GridElements currentlySelected = Grid[ycurrent / GRID_LEN][xcurrent/GRID_LEN];
+	switch (key_dir) {
+		case 1: // purchase light tower
+			if (currentlySelected == 0)
+			{
+				Grid[ycurrent / GRID_LEN][xcurrent/GRID_LEN] = Light;
+			}
+			
+		default:
+		break;
+	}
+	key_dir = 0
 }
