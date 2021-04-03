@@ -426,7 +426,7 @@ void draw_turret_medium(int x, int y, short int colour){
 
 void draw_turret_heavy(int x, int y, short int colour){
   for(int i = x+1; i < x+19; i++){
-    for(int j = y+2; j < 18; j++){
+    for(int j = y+2; j <y+ 18; j++){
       plot_pixel(i, j, colour);
     }
   }
