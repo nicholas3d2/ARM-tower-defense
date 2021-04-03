@@ -169,7 +169,7 @@ int main(void) {
 	// Main program loop, read user inputs while running
 	while (1) {
 		// clear 2 frames before
-		draw_turret_light(xprev2, yprev2, 0);
+		draw_turret_heavy(xprev2, yprev2, 0);
 		//draw_turret_diamond(xprev2, yprev2, 0);
 		draw_grid_box(xprev2, yprev2, 0);
 
@@ -177,7 +177,7 @@ int main(void) {
 		draw_grid();
 		draw_grid_box(xcurrent, ycurrent, WHITE);
 		//draw_turret_diamond(xcurrent, ycurrent, WHITE);
-		draw_turret_light(xcurrent, ycurrent, WHITE);
+		draw_turret_heavy(xcurrent, ycurrent, WHITE);
 		// update position
 		xprev2 = xprev1;
 		yprev2 = yprev1;
@@ -409,6 +409,59 @@ void draw_turret_medium(int x, int y, short int colour){
 }
 
 void draw_turret_heavy(int x, int y, short int colour){
+  for(int i = x+1; i < x+19; i++){
+    for(int j = y+2; j < 18; j++){
+      plot_pixel(i, j, colour);
+    }
+  }
+  plot_pixel(x+4, y+2, 0);
+  plot_pixel(x+5, y+2, 0);
+  plot_pixel(x+6, y+2, 0);
+  plot_pixel(x+7, y+2, 0);
+  plot_pixel(x+7, y+3, 0);
+
+  plot_pixel(x+15, y+2, 0);
+  plot_pixel(x+14, y+2, 0);
+  plot_pixel(x+13, y+2, 0);
+  plot_pixel(x+12, y+2, 0);
+  plot_pixel(x+12, y+3, 0);
+
+  for(int i = x+1; i < x+4; i++){
+    for(int j = y+7; j < y+15; j++){
+      plot_pixel(i, j, 0);
+    }
+  }
+
+  for(int i = x+16; i < x+19; i++){
+    for(int j = y+7; j < y+15; j++){
+      plot_pixel(i, j, 0);
+    }
+  }
+
+  plot_pixel(x+1, y+4, 0);
+  plot_pixel(x+1, y+5, 0);
+  plot_pixel(x+1, y+6, 0);
+  plot_pixel(x+2, y+6, 0);
+
+  plot_pixel(x+18, y+4, 0);
+  plot_pixel(x+18, y+5, 0);
+  plot_pixel(x+18, y+6, 0);
+  plot_pixel(x+17, y+6, 0);
+
+  plot_pixel(x+5, y+6, 0);
+  plot_pixel(x+6, y+6, 0);
+  plot_pixel(x+5, y+7, 0);
+  plot_pixel(x+6, y+7, 0);
+
+  plot_pixel(x+9, y+6, 0);
+  plot_pixel(x+10, y+6, 0);
+  plot_pixel(x+9, y+7, 0);
+  plot_pixel(x+10, y+7, 0);
+
+  plot_pixel(x+13, y+6, 0);
+  plot_pixel(x+14, y+6, 0);
+  plot_pixel(x+13, y+7, 0);
+  plot_pixel(x+14, y+7, 0);
 
 }
 
