@@ -156,6 +156,7 @@ int main(void) {
 	volatile int *JTAG_UART_ptr = (int *)0xFF201000; // JTAG UART address
 	volatile int *pixel_ctrl_ptr = (int *)0xFF203020;
   volatile int *HEX3_0_ptr = (int *)HEX3_HEX0_BASE;
+  volatile int *HEX5_4_ptr = (int *)HEX5_HEX4_BASE;
 
 	/* set front pixel buffer to start of FPGA On-chip memory */
 	*(pixel_ctrl_ptr + 1) = 0xC8000000; // first store the address in the
@@ -193,8 +194,8 @@ int main(void) {
 	// Main program loop, read user inputs while running
 	while (1) {
     //update score on HEX3-0
-    *HEX3_0_ptr = seg7[points & 0xF] | seg7[points >> 4 & 0xF] << 8 | seg7[points >> 8 & 0xF] << 16;
-
+    *HEX3_0_ptr = seg7[points & 0xF] | seg7[points >> 4 & 0xF] << 8 | seg7[points >> 8 & 0xF] << 16 | seg7[points >> 16 & 0xF] << 24;
+    *HEX5_4_ptr = seg7[points >> 16 & 0xF] | seg7[points >> 24 & 0xF] << 8;
 		// clear 2 frames before
 		//draw_turret_diamond(xprev2, yprev2, 0);
 		draw_grid_box(xprev2, yprev2, 0);
