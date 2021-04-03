@@ -183,7 +183,6 @@ int main(void) {
 	// Main program loop, read user inputs while running
 	while (1) {
 		// clear 2 frames before
-		draw_turret_heavy(xprev2, yprev2, 0);
 		//draw_turret_diamond(xprev2, yprev2, 0);
 		draw_grid_box(xprev2, yprev2, 0);
 
@@ -191,7 +190,7 @@ int main(void) {
 		draw_grid();
 		draw_grid_box(xcurrent, ycurrent, WHITE);
 		//draw_turret_diamond(xcurrent, ycurrent, WHITE);
-		draw_turret_heavy(xcurrent, ycurrent, WHITE);
+
 		// update position
 		xprev2 = xprev1;
 		yprev2 = yprev1;
