@@ -91,6 +91,7 @@ void put_jtag(volatile int *JTAG_UART_ptr, char c);
 // drawing circles
 void circleBres(int xc, int yc, int r, short int colour);		//xc = current x
 void drawCircle(int xc, int yc, int x, int y, short int colour); 
+void drawTowerRange();
 volatile int pixel_buffer_start; // global variable
 // location of user's grid box
 int xcurrent = 0;
@@ -248,7 +249,8 @@ int main(void) {
 		// draw
 		draw_grid();
 		draw_grid_box(xcurrent, ycurrent, WHITE);
-		circleBres(xcurrent+10, ycurrent+10, 40, ORANGE);
+		drawTowerRange();
+
     	draw_enemy_light(xcurrent, ycurrent, WHITE);
 
 		// update position
@@ -837,15 +839,34 @@ void updateTowers(){
 }
 // shifts pixel buffer
 void update_pixel_buffer(){
-	cvector_free(pixel_prev2);
-	cvector_copy(pixel_prev1, pixel_prev2);
-	cvector_free(pixel_prev1);
-	cvector_copy(pixel_current, pixel_prev1);
-	cvector_free(pixel_current);
+  for (int i = 0; i < cvector_size(pixel_prev2); i++) {
+    cvector_pop_back(pixel_prev2);
+  }
+  // cvector_free(pixel_prev2);
+  cvector_copy(pixel_prev1, pixel_prev2);
+  for (int i = 0; i < cvector_size(pixel_prev1); i++) {
+    cvector_pop_back(pixel_prev1);
+  }
+  // cvector_free(pixel_prev1);
+  cvector_copy(pixel_current, pixel_prev1);
+
+  for (int i = 0; i < cvector_size(pixel_current); i++) {
+    cvector_pop_back(pixel_current);
+  }
+  // cvector_free(pixel_current);
 }
 // clears pixels drawn
 void clear_pixels(){
 	for(int i = 0; i < cvector_size(pixel_prev2); i++){
 		plot_pixel(pixel_prev2[i].x, pixel_prev2[i].y, 0);
 	}
+}
+
+void drawTowerRange(){
+  for(int i = 0; i < numTowers; i++){
+	  if(Towers[i].x == xcurrent+10 && Towers[i].y == ycurrent+10){
+		  circleBres(Towers[i].x, Towers[i].y, Towers[i].range, ORANGE);
+		  break;
+	  }
+  }
 }
