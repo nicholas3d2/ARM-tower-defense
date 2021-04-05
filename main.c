@@ -148,6 +148,8 @@ GridElements Grid[12][16] =
 
 char seg7[] = {0x3f, 0x06, 0x5B, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x67};
 
+// number of towers on the map currently
+int numTowers = 0;
 
 // tower properties:
 struct tower{
@@ -158,15 +160,21 @@ struct tower{
   bool fired;     // false if it didn't fire this frame, true if it did
   bool readyToFire; // if remaining_reload_time = 0, then it is ready to fire (true)
   int remaining_reload_time;  // after firing, copy reload_time and count down to 0, then set readyToFire to true
-}lightTower, mediumTower, HeavyTower;
+}Towers[200];  //max 200 towers, enough to cover the whole map
+
+// tower setup functions
+void setTowers(GridElements gridElement, int x, int y);
 
 // Interrupt KEY
 volatile int key_dir = 0;
 /************main.h************/
 
 int main(void) {
-	volatile int *JTAG_UART_ptr = (int *)0xFF201000; // JTAG UART address
-	volatile int *pixel_ctrl_ptr = (int *)0xFF203020;
+
+  // light tower properties
+  
+  volatile int *JTAG_UART_ptr = (int *)0xFF201000; // JTAG UART address
+  volatile int *pixel_ctrl_ptr = (int *)0xFF203020;
   volatile int *HEX3_0_ptr = (int *)HEX3_HEX0_BASE;
   volatile int *HEX5_4_ptr = (int *)HEX5_HEX4_BASE;
 
@@ -623,19 +631,22 @@ void placeOrUpgradeTower(){
 			if (currentlySelected == 0 && points >= 25)
 			{
 				Grid[ycurrent / GRID_LEN][xcurrent/GRID_LEN] = Light;
-        points -= 25;
+        		points -= 25;
+				setTowers(Light, xcurrent, ycurrent);
 			}
 			break;
 		case 2:
 			if (currentlySelected == 0 && points >= 50) {
 				Grid[ycurrent / GRID_LEN][xcurrent / GRID_LEN] = Medium;
-        points -= 50;
+        		points -= 50;
+				setTowers(Medium, xcurrent, ycurrent);
 			}
 			break;
 		case 3:
 			if (currentlySelected == 0 && points >= 100) {
 				Grid[ycurrent / GRID_LEN][xcurrent / GRID_LEN] = Heavy;
-        points -= 100;
+        		points -= 100;
+				setTowers(Heavy, xcurrent, ycurrent);
 			}
 			break;
 		case 4:									// upgrade
@@ -684,4 +695,43 @@ void circleBres(int xc, int yc, int r, short int colour) {
       d = d + 4 * x + 6;
     drawCircle(xc, yc, x, y, colour);
   }
+}
+
+// tower setup functions
+void setTowers(GridElements gridElement, int x, int y){
+    switch (gridElement)
+    {
+        case Light:
+            Towers[numTowers].x = x;
+            Towers[numTowers].y = y;
+			Towers[numTowers].damage = 2;
+			Towers[numTowers].fired = false;
+			Towers[numTowers].range = 50;
+			Towers[numTowers].readyToFire = true;
+			Towers[numTowers].reload_time = 5;
+			Towers[numTowers].remaining_reload_time = 0;
+			break;
+		case Medium:
+			Towers[numTowers].x = x;
+            Towers[numTowers].y = y;
+			Towers[numTowers].damage = 5;
+			Towers[numTowers].fired = false;
+			Towers[numTowers].range = 80;
+			Towers[numTowers].readyToFire = true;
+			Towers[numTowers].reload_time = 15;
+			Towers[numTowers].remaining_reload_time = 0;
+			break;
+		case Heavy:
+			Towers[numTowers].x = x;
+            Towers[numTowers].y = y;
+			Towers[numTowers].damage = 10;
+			Towers[numTowers].fired = false;
+			Towers[numTowers].range = 120;
+			Towers[numTowers].readyToFire = true;
+			Towers[numTowers].reload_time = 25;
+			Towers[numTowers].remaining_reload_time = 0;
+    default:
+      break;
+    }
+    numTowers++;                //increment number of tower
 }
