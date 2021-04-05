@@ -52,6 +52,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "interrupt.h"
+#include "cvector.h"
 
 // function prototypes
 void plot_pixel(int x, int y, short int line_color);
@@ -172,6 +173,18 @@ void updateTowers();
 // Interrupt KEY
 volatile int key_dir = 0;
 volatile int tick = 0;
+
+
+// pixel array stuff
+typedef struct XY {
+  int x;
+  int y;
+} xy;
+cvector_vector_type(xy) pixel_current = NULL;	// current pixels drawn
+cvector_vector_type(xy) pixel_prev1 = NULL;		// previous frame drawn
+cvector_vector_type(xy) pixel_prev2 = NULL;		// 2 frams ago (clears the screen using this)
+void update_pixel_buffer();						// shifts pixel buffer
+void clear_pixels();							// clears pixels drawn
 /************main.h************/
 
 int main(void) {
@@ -224,14 +237,12 @@ int main(void) {
     | seg7[(points/100)%10 & 0xF] << 16 | seg7[(points/1000)%10 & 0xF] << 24;
     *HEX5_4_ptr = seg7[(points/10000)%10 & 0xF] | seg7[(points/100000)%10 & 0xF] << 8;
 		// clear 2 frames before
-		draw_grid_box(xprev2, yprev2, 0);
-		circleBres(xprev2+10, yprev2+10, 40, 0);
-    draw_enemy_light(xprev2, yprev2, 0);
+		clear_pixels();
 		// draw
 		draw_grid();
 		draw_grid_box(xcurrent, ycurrent, WHITE);
 		circleBres(xcurrent+10, ycurrent+10, 40, ORANGE);
-    draw_enemy_light(xcurrent, ycurrent, WHITE);
+    	draw_enemy_light(xcurrent, ycurrent, WHITE);
 
 		// update position
 		xprev2 = xprev1;
@@ -239,6 +250,7 @@ int main(void) {
 
 		xprev1 = xcurrent;
 		yprev1 = ycurrent;
+		update_pixel_buffer();
 
 		if(key_dir!=0)
 			placeOrUpgradeTower();
@@ -296,6 +308,12 @@ void plot_pixel(int x, int y, short int line_color) {
   if ((y > RESOLUTION_Y - 1 || y < 0) || (x > RESOLUTION_X - 1 || x < 0))
     return;
   *(short int *)(pixel_buffer_start + (y << 10) + (x << 1)) = line_color;
+  if(line_color!=0 && line_color!=GREEN){
+	  xy new;
+	  new.x = x;
+	  new.y = y;
+	  cvector_push_back(pixel_current, new);
+  }
 }
 
 char get_jtag(volatile int *JTAG_UART_ptr) {
@@ -808,5 +826,19 @@ void updateTowers(){
 				Towers[i].remaining_reload_time = Towers[i].reload_time;
 			}
 		}
+	}
+}
+// shifts pixel buffer
+void update_pixel_buffer(){
+	cvector_free(pixel_prev2);
+	cvector_copy(pixel_prev1, pixel_prev2);
+	cvector_free(pixel_prev1);
+	cvector_copy(pixel_current, pixel_prev1);
+	cvector_free(pixel_current);
+}
+// clears pixels drawn
+void clear_pixels(){
+	for(int i = 0; i < cvector_size(pixel_prev2); i++){
+		plot_pixel(pixel_prev2[i].x, pixel_prev2[i].y, 0);
 	}
 }
