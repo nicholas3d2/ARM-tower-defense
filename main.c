@@ -635,14 +635,14 @@ void placeOrUpgradeTower(){
 			{
 				Grid[ycurrent / GRID_LEN][xcurrent/GRID_LEN] = Light;
         		points -= 25;
-				setTowers(Light, xcurrent, ycurrent);
+				setTowers(Light, xcurrent+10, ycurrent+10);
 			}
 			break;
 		case 2:
 			if (currentlySelected == 0 && points >= 50) {
 				Grid[ycurrent / GRID_LEN][xcurrent / GRID_LEN] = Medium;
         		points -= 50;
-				setTowers(Medium, xcurrent, ycurrent);
+				setTowers(Medium, xcurrent+10, ycurrent+10);
 			}
 			break;
 		case 3:
