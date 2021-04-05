@@ -63,6 +63,9 @@ void draw_turret_diamond(int x, int y, short int line_colour);
 void draw_turret_light(int x, int y, short int colour);
 void draw_turret_medium(int x, int y, short int colour);
 void draw_turret_heavy(int x, int y, short int colour);
+void draw_enemy_light(int x, int y, short int colour);
+void draw_enemy_medium(int x, int y, short int colour);
+void draw_enemy_heavy(int x, int y, short int colour);
 //path drawing function prototypes
 void draw_path_horizontal(int x, int y, short int colour);
 void draw_path_vertical(int x, int y, short int colour);
@@ -221,14 +224,14 @@ int main(void) {
     | seg7[(points/100)%10 & 0xF] << 16 | seg7[(points/1000)%10 & 0xF] << 24;
     *HEX5_4_ptr = seg7[(points/10000)%10 & 0xF] | seg7[(points/100000)%10 & 0xF] << 8;
 		// clear 2 frames before
-		//draw_turret_diamond(xprev2, yprev2, 0);
 		draw_grid_box(xprev2, yprev2, 0);
 		circleBres(xprev2+10, yprev2+10, 40, 0);
+    draw_enemy_light(xprev2, yprev2, 0);
 		// draw
 		draw_grid();
 		draw_grid_box(xcurrent, ycurrent, WHITE);
 		circleBres(xcurrent+10, ycurrent+10, 40, ORANGE);
-		//draw_turret_diamond(xcurrent, ycurrent, WHITE);
+    draw_enemy_light(xcurrent, ycurrent, WHITE);
 
 		// update position
 		xprev2 = xprev1;
@@ -519,6 +522,57 @@ void draw_turret_heavy(int x, int y, short int colour){
 
 }
 
+
+void draw_enemy_light(int x, int y, short int colour){
+  draw_line(x+10, y+4, x+15, y+9, colour);
+  draw_line(x+15, y+10, x+10, y+15, colour);
+  draw_line(x+9, y+15, x+4, y+10, colour);
+  draw_line(x+4, y+9, x+9, y+4, colour);
+	
+  draw_line(x+10, y+5, x+14, y+9, colour);
+  draw_line(x+14, y+10, x+10, y+14, colour);
+  draw_line(x+9, y+14, x+5, y+10, colour);
+  draw_line(x+5, y+9, x+9, y+5, colour);
+  
+
+}
+
+void draw_enemy_medium(int x, int y, short int colour){
+  draw_line(x+10, y+4, x+15, y+9, colour);
+  draw_line(x+15, y+10, x+10, y+15, colour);
+  draw_line(x+9, y+15, x+4, y+10, colour);
+  draw_line(x+4, y+9, x+9, y+4, colour);
+	
+  draw_line(x+10, y+5, x+14, y+9, colour);
+  draw_line(x+14, y+10, x+10, y+14, colour);
+  draw_line(x+9, y+14, x+5, y+10, colour);
+  draw_line(x+5, y+9, x+9, y+5, colour);
+	
+  draw_line(x+9, y+6, x+6, y+9, colour);
+  draw_line(x+6, y+10, x+10, y+6, colour);
+  draw_line(x+10, y+13, x+13, y+10, colour);
+  draw_line(x+13, y+9, x+9, y+13, colour);
+  
+
+}
+
+void draw_enemy_heavy(int x, int y, short int colour){
+  draw_line(x+10, y+4, x+15, y+9, colour);
+  draw_line(x+15, y+10, x+10, y+15, colour);
+  draw_line(x+9, y+15, x+4, y+10, colour);
+  draw_line(x+4, y+9, x+9, y+4, colour);
+	
+  draw_line(x+10, y+5, x+14, y+9, colour);
+  draw_line(x+14, y+10, x+10, y+14, colour);
+  draw_line(x+9, y+14, x+5, y+10, colour);
+  draw_line(x+5, y+9, x+9, y+5, colour);
+	
+  draw_line(x+7, y+11, x+11, y+7, colour);
+  draw_line(x+7, y+12, x+12, y+7, colour);
+  draw_line(x+8, y+12, x+12, y+8, colour);
+  
+}
+
 // drawing path
 void draw_path_horizontal(int x, int y, short int colour){
 	draw_line(x, y+3, x+19, y+3, colour);
@@ -558,7 +612,7 @@ void draw_path_down_left(int x, int y, short int colour){
 void draw_path_up_right(int x, int y, short int colour){
   draw_line(x + 3, y + 16, x + 19, y + 16, colour);
   draw_line(x + 3, y + 15, x + 3, y , colour);
-  draw_line(x + 16, y + 3, x + 19, y + 4, colour);
+  draw_line(x + 16, y + 3, x + 19, y + 3, colour);
   draw_line(x + 16, y + 0, x + 16, y + 2, colour);
   plot_pixel(x + 7, y + 2, YELLOW);
   plot_pixel(x + 11, y + 12, YELLOW);
@@ -721,7 +775,7 @@ void setTowers(GridElements gridElement, int x, int y){
 			Towers[numTowers].fired = false;
 			Towers[numTowers].range = 80;
 			Towers[numTowers].readyToFire = true;
-			Towers[numTowers].reload_time = 15;
+			Towers[numTowers].reload_time = 10;
 			Towers[numTowers].remaining_reload_time = 0;
 			break;
 		case Heavy:
