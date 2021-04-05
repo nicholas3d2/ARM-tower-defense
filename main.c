@@ -148,6 +148,18 @@ GridElements Grid[12][16] =
 
 char seg7[] = {0x3f, 0x06, 0x5B, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x67};
 
+
+// tower properties:
+struct tower{
+  int x, y;       // location of the grid, do we need??
+  int range;      // range of tower's fire
+  int damage;     // damage dealt to enemies
+  int reload_time;  // time to reload after each shot
+  bool fired;     // false if it didn't fire this frame, true if it did
+  bool readyToFire; // if remaining_reload_time = 0, then it is ready to fire (true)
+  int remaining_reload_time;  // after firing, copy reload_time and count down to 0, then set readyToFire to true
+}lightTower, mediumTower, HeavyTower;
+
 // Interrupt KEY
 volatile int key_dir = 0;
 /************main.h************/
