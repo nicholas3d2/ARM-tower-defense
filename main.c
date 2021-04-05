@@ -166,6 +166,15 @@ struct tower{
   int remaining_reload_time;  // after firing, copy reload_time and count down to 0, then set readyToFire to true
 }Towers[200];  //max 200 towers, enough to cover the whole map
 
+//enemy properties:
+struct enemy{
+  int x,y;  //position of enemy
+  int speed;  //this is the speed of the enemy
+  int health; //hp of enemy
+  bool active; //see if enemy spawned, and on screen
+  
+}Enemies[50]; //max 50 enemies
+
 // tower setup functions
 void setTowers(GridElements gridElement, int x, int y);
 // update tower's reload etc given tick (variable from interrupt)
@@ -188,8 +197,6 @@ void clear_pixels();							// clears pixels drawn
 /************main.h************/
 
 int main(void) {
-
-  // light tower properties
   
   volatile int *JTAG_UART_ptr = (int *)0xFF201000; // JTAG UART address
   volatile int *pixel_ctrl_ptr = (int *)0xFF203020;
