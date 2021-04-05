@@ -164,7 +164,8 @@ struct tower{
 
 // tower setup functions
 void setTowers(GridElements gridElement, int x, int y);
-
+// update tower's reload etc given tick (variable from interrupt)
+void updateTowers();
 // Interrupt KEY
 volatile int key_dir = 0;
 volatile int tick = 0;
@@ -736,4 +737,22 @@ void setTowers(GridElements gridElement, int x, int y){
       break;
     }
     numTowers++;                //increment number of tower
+}
+void updateTowers(){
+	if(tick){
+		tick = 0;				// reset tick
+		for(int i = 0; i < numTowers; i++){
+			if(Towers[i].remaining_reload_time > 0){
+				Towers[i].remaining_reload_time--;			// decrement time
+				Towers[i].readyToFire = false;
+				Towers[i].fired = false;
+			}else if(Towers[i].remaining_reload_time == 0 && !Towers[i].fired){
+				Towers[i].readyToFire = true;
+			}else if(Towers[i].remaining_reload_time == 0 && Towers[i].fired){
+				Towers[i].readyToFire = false;
+				Towers[i].fired = false;
+				Towers[i].remaining_reload_time = Towers[i].reload_time;
+			}
+		}
+	}
 }
