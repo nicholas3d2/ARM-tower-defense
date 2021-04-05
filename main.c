@@ -167,6 +167,7 @@ void setTowers(GridElements gridElement, int x, int y);
 
 // Interrupt KEY
 volatile int key_dir = 0;
+volatile int tick = 0;
 /************main.h************/
 
 int main(void) {
@@ -197,6 +198,7 @@ int main(void) {
 	config_GIC();            // configure the general interrupt controller
 	// interrupts
 	config_KEYs();          // configure pushbutton KEYs to generate interrupts
+	config_interval_timer();
 	enable_A9_interrupts(); // enable interrupts
 
 	// draw grid box (user controlled grid box)

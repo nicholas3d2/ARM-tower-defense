@@ -129,18 +129,19 @@
 
 void set_A9_IRQ_stack(void);
 void config_GIC(void);
-void config_HPS_timer(void);
-void config_HPS_GPIO1(void);
-void config_interval_timer(void);
 void config_KEYs(void);
+void config_interval_timer();
 void enable_A9_interrupts(void);
+void interval_timer_ISR();
 void __attribute__((interrupt)) __cs3_isr_irq(void);
+
 
 /* key_dir is written by interrupt service routine; we have to
  * declare these as volatile to avoid the compiler caching their values in
  * registers */
 
 extern volatile int key_dir;
+extern volatile int tick;         // Timer interrupt sets it to 1, must be set to 0 by program
 
 // int main(void) {
 //   set_A9_IRQ_stack();      // initialize the stack pointer for IRQ mode
@@ -201,7 +202,16 @@ void config_GIC(void) {
   address = MPCORE_GIC_DIST + ICDDCR;
   *((int *)address) = ENABLE;
 }
-
+void config_interval_timer() {
+  volatile int *interval_timer_ptr =
+      (int *)TIMER_BASE; // interal timer base address
+  /* set the interval timer period for scrolling the HEX displays */
+  int counter = 50000000; // 1/(100 MHz) x 5x10^6 = 50 msec
+  *(interval_timer_ptr + 0x2) = (counter & 0xFFFF);
+  *(interval_timer_ptr + 0x3) = (counter >> 16) & 0xFFFF;
+  /* start interval timer, enable its interrupts */
+  *(interval_timer_ptr + 1) = 0x7; // STOP = 0, START = 1, CONT = 1, ITO = 1
+}
 
 void pushbutton_ISR(void) {
     volatile int *KEY_ptr = (int *)KEY_BASE;
@@ -225,11 +235,19 @@ void __attribute__((interrupt)) __cs3_isr_irq(void) {
     int int_ID = *((int *)address);
     if (int_ID == KEYS_IRQ) // check if interrupt is from the KEYs
         pushbutton_ISR();
-    else
-        while (1)
+    else if (int_ID == INTERVAL_TIMER_IRQ)
+      interval_timer_ISR();
+    else 
+      while (1)
         ; // if unexpected, then stay here
     // Write to the End of Interrupt Register (ICCEOIR)
     address = MPCORE_GIC_CPUIF + ICCEOIR;
     *((int *)address) = int_ID;
     return;
+}
+void interval_timer_ISR() {
+  volatile int *interval_timer_ptr = (int *)TIMER_BASE;
+  tick++;
+  *(interval_timer_ptr) = 0;               // Clear the interrupt
+  return;
 }
