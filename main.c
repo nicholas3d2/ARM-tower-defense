@@ -265,8 +265,14 @@ int main(void) {
 		draw_grid();
 		draw_grid_box(xcurrent, ycurrent, WHITE);
 		circleBres(xcurrent+10, ycurrent+10, 40, ORANGE);
-    draw_enemy_light(xcurrent, ycurrent, WHITE);
+   		 draw_enemy_light(xcurrent, ycurrent, WHITE);
+		drawEnemies(); //draw active enemies
 
+		//spawn an enemy
+		if(spawnRate == 10){
+		spawnEnemy();
+		spawnRate = 0; //reset respawn time
+		}
 		// update position
 		xprev2 = xprev1;
 		yprev2 = yprev1;
@@ -292,13 +298,7 @@ int main(void) {
 				loseHealth();
 		}
 
-    drawEnemies(); //draw active enemies
-
-    //spawn an enemy
-    if(spawnRate == 10){
-      spawnEnemy();
-      spawnRate = 0; //reset respawn time
-    }
+    
 
 		wait_for_vsync();
 		pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
@@ -734,7 +734,7 @@ void drawEnemies(){
         draw_enemy_heavy(Enemies[i].x, Enemies[i].y, WHITE);
       }
       //determine type of grid enemy is on, update x,y accordingly
-      GridElements currentGrid = Grid[Enemies[i].x/GRID_LEN][Enemies[i].y/GRID_LEN];
+      GridElements currentGrid = Grid[Enemies[i].y/GRID_LEN][Enemies[i].x/GRID_LEN];
       if(currentGrid == Path_Vertical_Down ||  currentGrid == Path_Right_Down){
         Enemies[i].y += Enemies[i].speed;
       }else if(currentGrid == Path_Down_Right || currentGrid == Path_Horizontal_Right){
