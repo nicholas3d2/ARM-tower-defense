@@ -785,7 +785,14 @@ void placeOrUpgradeTower(){
 
 void spawnEnemy(){
   //determine kind of enemy to add to array (random? scripted?)
-  
+  //LIGHT ENEMY
+  Enemies[numEnemies].type = 0;
+  //spawn x,y coords
+  Enemies[numEnemies].x = 2*GRID_LEN;
+  Enemies[numEnemies].y = 0;
+  Enemies[numEnemies].active = TRUE;
+  Enemies[numEnemies].health = 10;
+
   numEnemies++;
 }
 
