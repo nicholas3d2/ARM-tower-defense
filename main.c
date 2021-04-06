@@ -698,7 +698,8 @@ void draw_grid(){
 					draw_path_horizontal(GRID_LEN * x, GRID_LEN * y, PATH_COLOUR);
 					break;
 				case Path_Vertical_Up: 
-				case Path_Vertical_Down:   
+				case Path_Vertical_Down:
+        case Path_End:   
 					draw_path_vertical(GRID_LEN * x, GRID_LEN * y, PATH_COLOUR);
 					break;
 				case Path_Right_Down:  
@@ -740,7 +741,7 @@ void drawEnemies(){
         Enemies[i].x += Enemies[i].speed;
       }else if(currentGrid == Path_Right_Up || currentGrid == Path_Vertical_Up){
         Enemies[i].y -= Enemies[i].speed;
-      }else{ //reached end
+      }else{ //reached PATH_END
         Enemies[i].active == false;
         loseHealth(); //player loses health
         if(Enemies[i].type == 0){ //light
