@@ -83,6 +83,9 @@ void loseHealth();
 void draw_grid();
 void clear_grid();
 
+//draw enemies
+void drawEnemies();
+
 // placing and upgrading towers
 void placeOrUpgradeTower();
 char get_jtag(volatile int *JTAG_UART_ptr);
@@ -91,7 +94,6 @@ void put_jtag(volatile int *JTAG_UART_ptr, char c);
 // drawing circles
 void circleBres(int xc, int yc, int r, short int colour);		//xc = current x
 void drawCircle(int xc, int yc, int x, int y, short int colour); 
-void drawTowerRange();
 volatile int pixel_buffer_start; // global variable
 // location of user's grid box
 int xcurrent = 0;
@@ -110,6 +112,9 @@ int health = 10; //starting value
 
 // Points
 int points = 100; //starting value
+
+// Spawn Rate
+int spawnRate = 10;
 
 // Grid Elements
 typedef enum{
@@ -132,7 +137,8 @@ typedef enum{
   Path_Left_Up,
   Path_Left_Down,
   Path_Up_Right,
-  Path_Up_Left
+  Path_Up_Left,
+  Path_End
 }GridElements;
 
 GridElements Grid[12][16] = 
@@ -148,13 +154,16 @@ GridElements Grid[12][16] =
 	{Empty , Empty, Empty , Empty, Empty , Empty, Empty , Empty,Empty , Empty, Empty , Empty, Empty , Path_Vertical_Down, Empty , Empty},
 	{Empty , Empty, Empty , Empty, Empty , Empty, Empty , Empty,Empty , Empty, Empty , Empty, Empty , Path_Vertical_Down, Empty , Empty},
 	{Empty , Empty, Empty , Empty, Empty , Empty, Empty , Empty,Empty , Empty, Empty , Empty, Empty , Path_Vertical_Down, Empty , Empty},
-	{Empty , Empty, Empty , Empty, Empty , Empty, Empty , Empty,Empty , Empty, Empty , Empty, Empty , Path_Vertical_Down, Empty , Empty}
+	{Empty , Empty, Empty , Empty, Empty , Empty, Empty , Empty,Empty , Empty, Empty , Empty, Empty , Path_End, Empty , Empty}
 };
 
 char seg7[] = {0x3f, 0x06, 0x5B, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x67};
 
 // number of towers on the map currently
 int numTowers = 0;
+
+//number of enemies on map
+int numEnemies = 0;
 
 // tower properties:
 struct tower{
@@ -172,6 +181,8 @@ struct enemy{
   int x,y;  //position of enemy
   int speed;  //this is the speed of the enemy
   int health; //hp of enemy
+  int points; //amount of points the enemy is worth
+  int type; //0 = light, 1 = medium, 2 = heavy
   bool active; //see if enemy spawned, and on screen
   
 }Enemies[50]; //max 50 enemies
@@ -180,6 +191,10 @@ struct enemy{
 void setTowers(GridElements gridElement, int x, int y);
 // update tower's reload etc given tick (variable from interrupt)
 void updateTowers();
+
+// spawn enemy
+void spawnEnemy();
+
 // Interrupt KEY
 volatile int key_dir = 0;
 volatile int tick = 0;
@@ -249,9 +264,8 @@ int main(void) {
 		// draw
 		draw_grid();
 		draw_grid_box(xcurrent, ycurrent, WHITE);
-		drawTowerRange();
-
-    	draw_enemy_light(xcurrent, ycurrent, WHITE);
+		circleBres(xcurrent+10, ycurrent+10, 40, ORANGE);
+    draw_enemy_light(xcurrent, ycurrent, WHITE);
 
 		// update position
 		xprev2 = xprev1;
@@ -277,6 +291,14 @@ int main(void) {
 			} else if (c == 'e')
 				loseHealth();
 		}
+
+    drawEnemies(); //draw active enemies
+
+    //spawn an enemy
+    if(spawnRate == 10){
+      spawnEnemy();
+      spawnRate = 0; //reset respawn time
+    }
 
 		wait_for_vsync();
 		pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
@@ -699,6 +721,22 @@ void draw_grid(){
 		}
 	}
 }
+
+void drawEnemies(){
+  for(int i = 0; i < numEnemies; i++){
+    if(Enemies[i].active){
+      if(Enemies[i].type == 0){ //light
+        draw_enemy_light(Enemies[i].x, Enemies[i].y, WHITE);
+      }else if(Enemies[i].type == 1){ //medium
+        draw_enemy_medium(Enemies[i].x, Enemies[i].y, WHITE);
+      }else{ //heavy
+        draw_enemy_heavy(Enemies[i].x, Enemies[i].y, WHITE);
+      }
+    }
+  }
+}
+
+
 // health related functions
 void updateHealthToLEDR(){
 	volatile int *LEDR = (int *)LEDR_BASE;
@@ -744,6 +782,13 @@ void placeOrUpgradeTower(){
 	key_dir = 0;
 	return;
 }
+
+void spawnEnemy(){
+  //determine kind of enemy to add to array (random? scripted?)
+  
+  numEnemies++;
+}
+
 // Function to put pixels
 // at subsequence points
 void drawCircle(int xc, int yc, int x, int y, short int colour) {
@@ -819,9 +864,12 @@ void setTowers(GridElements gridElement, int x, int y){
     }
     numTowers++;                //increment number of tower
 }
+
+
 void updateTowers(){
 	if(tick){
 		tick = 0;				// reset tick
+    spawnRate++;    // increment spawn timer
 		for(int i = 0; i < numTowers; i++){
 			if(Towers[i].remaining_reload_time > 0){
 				Towers[i].remaining_reload_time--;			// decrement time
@@ -836,37 +884,19 @@ void updateTowers(){
 			}
 		}
 	}
-}
+} 
+
 // shifts pixel buffer
 void update_pixel_buffer(){
-  for (int i = 0; i < cvector_size(pixel_prev2); i++) {
-    cvector_pop_back(pixel_prev2);
-  }
-  // cvector_free(pixel_prev2);
-  cvector_copy(pixel_prev1, pixel_prev2);
-  for (int i = 0; i < cvector_size(pixel_prev1); i++) {
-    cvector_pop_back(pixel_prev1);
-  }
-  // cvector_free(pixel_prev1);
-  cvector_copy(pixel_current, pixel_prev1);
-
-  for (int i = 0; i < cvector_size(pixel_current); i++) {
-    cvector_pop_back(pixel_current);
-  }
-  // cvector_free(pixel_current);
+	cvector_free(pixel_prev2);
+	cvector_copy(pixel_prev1, pixel_prev2);
+	cvector_free(pixel_prev1);
+	cvector_copy(pixel_current, pixel_prev1);
+	cvector_free(pixel_current);
 }
 // clears pixels drawn
 void clear_pixels(){
 	for(int i = 0; i < cvector_size(pixel_prev2); i++){
 		plot_pixel(pixel_prev2[i].x, pixel_prev2[i].y, 0);
 	}
-}
-
-void drawTowerRange(){
-  for(int i = 0; i < numTowers; i++){
-	  if(Towers[i].x == xcurrent+10 && Towers[i].y == ycurrent+10){
-		  circleBres(Towers[i].x, Towers[i].y, Towers[i].range, ORANGE);
-		  break;
-	  }
-  }
 }
