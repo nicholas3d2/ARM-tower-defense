@@ -732,6 +732,25 @@ void drawEnemies(){
       }else{ //heavy
         draw_enemy_heavy(Enemies[i].x, Enemies[i].y, WHITE);
       }
+      //determine type of grid enemy is on, update x,y accordingly
+      GridElements currentGrid = Grid[Enemies[i].x/GRID_LEN][Enemies[i].y/GRID_LEN];
+      if(currentGrid == Path_Vertical_Down ||  currentGrid == Path_Right_Down){
+        Enemies[i].y += Enemies[i].speed;
+      }else if(currentGrid == Path_Down_Right || currentGrid == Path_Horizontal_Right){
+        Enemies[i].x += Enemies[i].speed;
+      }else if(currentGrid == Path_Right_Up || currentGrid == Path_Vertical_Up){
+        Enemies[i].y -= Enemies[i].speed;
+      }else{ //reached end
+        Enemies[i].active == false;
+        loseHealth(); //player loses health
+        if(Enemies[i].type == 0){ //light
+          draw_enemy_light(Enemies[i].x, Enemies[i].y, 0);
+        }else if(Enemies[i].type == 1){ //medium
+          draw_enemy_medium(Enemies[i].x, Enemies[i].y, 0);
+        }else{ //heavy
+          draw_enemy_heavy(Enemies[i].x, Enemies[i].y, 0);
+        }
+      }
     }
   }
 }
@@ -792,6 +811,8 @@ void spawnEnemy(){
   Enemies[numEnemies].y = 0;
   Enemies[numEnemies].active = TRUE;
   Enemies[numEnemies].health = 10;
+  Enemies[numEnemies].points = 5;
+  Enemies[numEnemies].speed = 2;
 
   numEnemies++;
 }
