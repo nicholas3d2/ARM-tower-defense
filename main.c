@@ -917,11 +917,17 @@ void updateTowers(){
 
 // shifts pixel buffer
 void update_pixel_buffer(){
-	cvector_free(pixel_prev2);
+	for(int i = 0; i < cvector_size(pixel_prev2); i++){
+		cvector_pop_back(pixel_prev2);
+	}
 	cvector_copy(pixel_prev1, pixel_prev2);
-	cvector_free(pixel_prev1);
+	for(int i = 0; i < cvector_size(pixel_prev1); i++){
+		cvector_pop_back(pixel_prev1);
+	}
 	cvector_copy(pixel_current, pixel_prev1);
-	cvector_free(pixel_current);
+	for(int i = 0; i < cvector_size(pixel_current); i++){
+		cvector_pop_back(pixel_current);
+	}
 }
 // clears pixels drawn
 void clear_pixels(){
