@@ -734,13 +734,18 @@ void drawEnemies(){
         draw_enemy_heavy(Enemies[i].x, Enemies[i].y, WHITE);
       }
       //determine type of grid enemy is on, update x,y accordingly
+	  int gridY = Enemies[i].y/GRID_LEN;
+	  int gridX = Enemies[i].x/GRID_LEN;
       GridElements currentGrid = Grid[Enemies[i].y/GRID_LEN][Enemies[i].x/GRID_LEN];
       if(currentGrid == Path_Vertical_Down ||  currentGrid == Path_Right_Down){
         Enemies[i].y += Enemies[i].speed;
-      }else if(currentGrid == Path_Down_Right || currentGrid == Path_Horizontal_Right){
+      }else if(currentGrid == Path_Down_Right || currentGrid == Path_Horizontal_Right
+	  || (currentGrid == Path_Up_Right && Enemies[i].y == gridY*GRID_LEN)){
         Enemies[i].x += Enemies[i].speed;
-      }else if(currentGrid == Path_Right_Up || currentGrid == Path_Vertical_Up){
+      }else if(currentGrid == Path_Right_Up || currentGrid == Path_Vertical_Up || 
+	  (currentGrid == Path_Up_Right && Enemies[i].y!= gridY*GRID_LEN)){
         Enemies[i].y -= Enemies[i].speed;
+	  
       }else if(currentGrid == Path_End){ //reached PATH_END
         Enemies[i].active == false;
         loseHealth(); //player loses health
