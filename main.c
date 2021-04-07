@@ -734,6 +734,10 @@ void draw_grid(){
 void drawEnemies(){
   for(int i = 0; i < numEnemies; i++){
     if(Enemies[i].active){
+	  if(Enemies[i].health <=0){
+		Enemies[i].active = false;
+		continue;
+	  }
       if(Enemies[i].type == 0){ //light
         draw_enemy_light(Enemies[i].x, Enemies[i].y, WHITE);
       }else if(Enemies[i].type == 1){ //medium
@@ -965,10 +969,19 @@ int distance(int x0, int y0, int x1, int y1){
 void towerFireControl(){
 	for(int i = 0; i < numTowers; i++){
 		if(Towers[i].readyToFire){
-			if(Towers[i].range >= distance(Towers[i].x, Towers[i].y, 160, 120)){
-				draw_line(Towers[i].x, Towers[i].y, 160, 120, RED);
-				Towers[i].fired = true;
-
+			for(int j = 0; j < numEnemies; j ++){
+				if(Towers[i].readyToFire && 
+				   Enemies[j].active && 
+				   Towers[i].range >= distance(Towers[i].x, Towers[i].y, Enemies[j].x+10, Enemies[j].y+10)
+				   ){
+					draw_line(Towers[i].x, Towers[i].y, Enemies[j].x+10, Enemies[j].y+10,
+							RED);
+					draw_line(Towers[i].x+1, Towers[i].y, Enemies[j].x+11, Enemies[j].y+10,
+							RED);
+					Towers[i].fired = true;
+					Towers[i].readyToFire = false;
+					Enemies[j].health -= Towers[i].damage;
+				}
 			}
 		}
 	}
