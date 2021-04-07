@@ -47,6 +47,11 @@
 #define FALSE 0
 #define TRUE 1
 
+// Enemy health stuff
+#define LIGHTENEMYHEALTH 10
+#define MEDIUMENEMYHEALTH 20
+#define HEAVYENEMYHEALTH 30
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -85,7 +90,8 @@ void clear_grid();
 
 //draw enemies
 void drawEnemies();
-
+// draw enemies' health bars
+void drawEnemyHealthBar();
 // placing and upgrading towers
 void placeOrUpgradeTower();
 char get_jtag(volatile int *JTAG_UART_ptr);
@@ -986,3 +992,11 @@ void towerFireControl(){
 		}
 	}
 }
+// draws enemy health bars. 10 pixels for full health
+// void drawEnemyHealthBar(){
+// 	for(int i = 0; i < numEnemies; i++){
+// 		if(Enemies[i].active){
+// 			int healthBarLenth = 
+// 		}
+// 	}
+// }
