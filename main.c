@@ -748,7 +748,7 @@ void drawEnemies(){
         Enemies[i].y -= Enemies[i].speed;
 	  
       }else if(currentGrid == Path_End){ //reached PATH_END
-        Enemies[i].active == false;
+        Enemies[i].active = false;
         loseHealth(); //player loses health
         if(Enemies[i].type == 0){ //light
           draw_enemy_light(Enemies[i].x, Enemies[i].y, 0);
