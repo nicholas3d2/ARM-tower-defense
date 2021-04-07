@@ -206,6 +206,11 @@ typedef struct XY {
   int x;
   int y;
 } xy;
+
+// tower fire control functions
+int distance(int x0, int y0, int x1, int y1);	// returns the straight line distance between two points
+void towerFireControl();						// controls the firing of the towers
+//pixel array initialize
 cvector_vector_type(xy) pixel_current = NULL;	// current pixels drawn
 cvector_vector_type(xy) pixel_prev1 = NULL;		// previous frame drawn
 cvector_vector_type(xy) pixel_prev2 = NULL;		// 2 frams ago (clears the screen using this)
@@ -268,6 +273,7 @@ int main(void) {
 		//circleBres(xcurrent+10, ycurrent+10, 40, ORANGE);
    		 draw_enemy_light(xcurrent, ycurrent, WHITE);
 		drawEnemies(); //draw active enemies
+		towerFireControl();
 		drawTowerRange(); 	
 		//spawn an enemy
 		if(spawnRate == 10){
@@ -275,6 +281,7 @@ int main(void) {
 		spawnRate = 0; //reset respawn time
 		}
 		// update position
+		updateTowers();
 		xprev2 = xprev1;
 		yprev2 = yprev1;
 
@@ -948,4 +955,21 @@ void drawTowerRange() {
 		break;
 		}
   }
+}
+// returns the straight line distance between two points
+int distance(int x0, int y0, int x1, int y1){
+	return sqrt( pow(x0-x1, 2) + pow(y0 - y1, 2));
+}
+
+ // controls the firing of the towers
+void towerFireControl(){
+	for(int i = 0; i < numTowers; i++){
+		if(Towers[i].readyToFire){
+			if(Towers[i].range >= distance(Towers[i].x, Towers[i].y, 160, 120)){
+				draw_line(Towers[i].x, Towers[i].y, 160, 120, RED);
+				Towers[i].fired = true;
+
+			}
+		}
+	}
 }
