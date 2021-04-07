@@ -94,6 +94,7 @@ void put_jtag(volatile int *JTAG_UART_ptr, char c);
 // drawing circles
 void circleBres(int xc, int yc, int r, short int colour);		//xc = current x
 void drawCircle(int xc, int yc, int x, int y, short int colour); 
+void drawTowerRange(); 		// draws tower circles
 volatile int pixel_buffer_start; // global variable
 // location of user's grid box
 int xcurrent = 0;
@@ -264,10 +265,10 @@ int main(void) {
 		// draw
 		draw_grid();
 		draw_grid_box(xcurrent, ycurrent, WHITE);
-		circleBres(xcurrent+10, ycurrent+10, 40, ORANGE);
+		//circleBres(xcurrent+10, ycurrent+10, 40, ORANGE);
    		 draw_enemy_light(xcurrent, ycurrent, WHITE);
 		drawEnemies(); //draw active enemies
-
+		drawTowerRange(); 	
 		//spawn an enemy
 		if(spawnRate == 10){
 		spawnEnemy();
@@ -939,4 +940,12 @@ void clear_pixels(){
 	for(int i = 0; i < cvector_size(pixel_prev2); i++){
 		plot_pixel(pixel_prev2[i].x, pixel_prev2[i].y, 0);
 	}
+}
+void drawTowerRange() {
+  	for (int i = 0; i < numTowers; i++) {
+		if (Towers[i].x == xcurrent + 10 && Towers[i].y == ycurrent + 10) {
+		circleBres(Towers[i].x, Towers[i].y, Towers[i].range, ORANGE);
+		break;
+		}
+  }
 }
