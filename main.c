@@ -29,7 +29,7 @@
 #define GREY 0xC618
 #define PINK 0xFC18
 #define ORANGE 0xFC00
-
+#define TowerColour 0xFFFE
 #define ABS(x) (((x) > 0) ? (x) : -(x))
 
 /* Screen size. */
@@ -347,7 +347,7 @@ void plot_pixel(int x, int y, short int line_color) {
   if ((y > RESOLUTION_Y - 1 || y < 0) || (x > RESOLUTION_X - 1 || x < 0))
     return;
   *(short int *)(pixel_buffer_start + (y << 10) + (x << 1)) = line_color;
-  if(line_color!=0 && line_color!=GREEN){
+  if(line_color!=0 && line_color!=GREEN && line_color != TowerColour){
 	  xy new;
 	  new.x = x;
 	  new.y = y;
@@ -692,13 +692,13 @@ void draw_grid(){
 				//need to add
 				case Empty: break;
 				case Light:	
-					draw_turret_light(x*GRID_LEN, y*GRID_LEN, WHITE);
+					draw_turret_light(x*GRID_LEN, y*GRID_LEN, TowerColour);
 					break;		
 				case Medium:
-					draw_turret_medium(x*GRID_LEN, y*GRID_LEN, WHITE);
+					draw_turret_medium(x*GRID_LEN, y*GRID_LEN, TowerColour);
 					break;
 				case Heavy: 
-					draw_turret_heavy(x*GRID_LEN, y*GRID_LEN, WHITE);
+					draw_turret_heavy(x*GRID_LEN, y*GRID_LEN, TowerColour);
 					break;
 				
 				case Path_Horizontal_Left:  
