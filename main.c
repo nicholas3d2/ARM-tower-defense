@@ -48,9 +48,9 @@
 #define TRUE 1
 
 // Enemy health stuff
-#define LIGHTENEMYHEALTH 10
-#define MEDIUMENEMYHEALTH 20
-#define HEAVYENEMYHEALTH 30
+#define LIGHTENEMYHEALTH 10.0
+#define MEDIUMENEMYHEALTH 20.0
+#define HEAVYENEMYHEALTH 30.0
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -277,8 +277,10 @@ int main(void) {
 		draw_grid();
 		draw_grid_box(xcurrent, ycurrent, WHITE);
 		//circleBres(xcurrent+10, ycurrent+10, 40, ORANGE);
-   		 draw_enemy_light(xcurrent, ycurrent, WHITE);
+		draw_enemy_light(xcurrent, ycurrent, WHITE);
+		drawEnemyHealthBar(); // draw active enemy health bars
 		drawEnemies(); //draw active enemies
+
 		towerFireControl();
 		drawTowerRange(); 	
 		//spawn an enemy
@@ -992,11 +994,27 @@ void towerFireControl(){
 		}
 	}
 }
-// draws enemy health bars. 10 pixels for full health
-// void drawEnemyHealthBar(){
-// 	for(int i = 0; i < numEnemies; i++){
-// 		if(Enemies[i].active){
-// 			int healthBarLenth = 
-// 		}
-// 	}
-// }
+//draws enemy health bars. 10 pixels for full health
+void drawEnemyHealthBar(){
+	for(int i = 0; i < numEnemies; i++){
+		if(Enemies[i].active){
+			int healthBarLength = 0;
+			switch (Enemies[i].type)
+			{
+			case 0:		//light
+				healthBarLength = ((double) Enemies[i].health / LIGHTENEMYHEALTH) * 10;
+				break;
+			case 1:
+				healthBarLength = ((double) Enemies[i].health / MEDIUMENEMYHEALTH) * 10;
+				break;
+			case 2:
+				healthBarLength = ((double) Enemies[i].health / HEAVYENEMYHEALTH) * 10;
+				break;
+			default:
+				break;
+			}
+			draw_line(Enemies[i].x+5, Enemies[i].y, Enemies[i].x+5+healthBarLength, Enemies[i].y, BLUE);
+			draw_line(Enemies[i].x+5, Enemies[i].y-1, Enemies[i].x+5+healthBarLength, Enemies[i].y-1, BLUE);
+		}
+	}
+}
