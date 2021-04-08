@@ -287,8 +287,6 @@ int main(void) {
 		// draw
 		draw_grid();
 		draw_grid_box(xcurrent, ycurrent, WHITE);
-		//circleBres(xcurrent+10, ycurrent+10, 40, ORANGE);
-		draw_enemy_light(xcurrent, ycurrent, WHITE);
 		drawEnemyHealthBar(); // draw active enemy health bars
 		drawEnemies(); //draw active enemies
 
