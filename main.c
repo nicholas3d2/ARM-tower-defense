@@ -49,13 +49,13 @@
 
 //Tower damage
 #define LIGHTTOWERDMG 2.0
-#define MEDIUMTOWERDMG 4.0
+#define MEDIUMTOWERDMG 5.0
 #define HEAVYTOWERDMG 15.0
 
 // Enemy health stuff
 #define LIGHTENEMYHEALTH 5.0
-#define MEDIUMENEMYHEALTH 10.0
-#define HEAVYENEMYHEALTH 30.0
+#define MEDIUMENEMYHEALTH 15.0
+#define HEAVYENEMYHEALTH 40.0
 
 //Enemy points
 #define LIGHTENEMYPOINTS 5.0
@@ -268,7 +268,7 @@ int main(void) {
 	// draw grid box (user controlled grid box)
 
 	// TEST JTAG UART
-	char text_string[] = "\nJTAG UART test\n> \0";
+	char text_string[] = "\nWelcome to ARM Tower Defense\n> \0";
 	char *str, c;
 		
 	for (str = text_string; *str != 0; ++str) {
@@ -948,7 +948,7 @@ void setTowers(GridElements gridElement, int x, int y){
             Towers[numTowers].y = y;
 			Towers[numTowers].damage = HEAVYTOWERDMG;
 			Towers[numTowers].fired = false;
-			Towers[numTowers].range = 120;
+			Towers[numTowers].range = 100;
 			Towers[numTowers].readyToFire = true;
 			Towers[numTowers].reload_time = 15;
 			Towers[numTowers].remaining_reload_time = 0;
