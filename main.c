@@ -49,7 +49,7 @@
 
 //Tower damage
 #define LIGHTTOWERDMG 2.0
-#define MEDIUMTOWERDMG 6.0
+#define MEDIUMTOWERDMG 4.0
 #define HEAVYTOWERDMG 15.0
 
 // Enemy health stuff
@@ -58,9 +58,9 @@
 #define HEAVYENEMYHEALTH 30.0
 
 //Enemy points
-#define LIGHTENEMYPOINTS 10.0
-#define MEDIUMENEMYPOINTS 20.0
-#define HEAVYENEMYPOINTS 40.0
+#define LIGHTENEMYPOINTS 5.0
+#define MEDIUMENEMYPOINTS 15.0
+#define HEAVYENEMYPOINTS 30.0
 
 
 #include <stdbool.h>
@@ -129,9 +129,10 @@ int yprev2 = 0;
 int health = 10; //starting value
 
 // Points
-int points = 100; //starting value
+int points = 75; //starting value
 
 // Spawn Rate
+int spawnTime = 15;
 int spawnRate = 15;
 
 // Grid Elements
@@ -293,9 +294,12 @@ int main(void) {
 		towerFireControl();
 		drawTowerRange(); 	
 		//spawn an enemy
-		if(spawnRate == 15){
+		if(spawnRate == spawnTime){
 		spawnEnemy();
 		spawnRate = 0; //reset respawn time
+      if(numEnemies % 5 == 0){ //every 5 spawns lower spawn time
+        spawnTime--;
+      }
 		}
 		// update position
 		updateTowers();
