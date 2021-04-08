@@ -827,7 +827,7 @@ void placeOrUpgradeTower(){
 			if (currentlySelected == 0 && points >= 100) {
 				Grid[ycurrent / GRID_LEN][xcurrent / GRID_LEN] = Heavy;
         		points -= 100;
-				setTowers(Heavy, xcurrent, ycurrent);
+				setTowers(Heavy, xcurrent+10, ycurrent+10);
 			}
 			break;
 		case 4:									// upgrade
