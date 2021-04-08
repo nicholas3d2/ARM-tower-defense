@@ -47,10 +47,21 @@
 #define FALSE 0
 #define TRUE 1
 
+//Tower damage
+#define LIGHTTOWERDMG 2.0
+#define MEDIUMTOWERDMG 6.0
+#define HEAVYTOWERDMG 15.0
+
 // Enemy health stuff
-#define LIGHTENEMYHEALTH 10.0
-#define MEDIUMENEMYHEALTH 20.0
+#define LIGHTENEMYHEALTH 5.0
+#define MEDIUMENEMYHEALTH 10.0
 #define HEAVYENEMYHEALTH 30.0
+
+//Enemy points
+#define LIGHTENEMYPOINTS 10.0
+#define MEDIUMENEMYPOINTS 20.0
+#define HEAVYENEMYPOINTS 40.0
+
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -121,7 +132,7 @@ int health = 10; //starting value
 int points = 100; //starting value
 
 // Spawn Rate
-int spawnRate = 10;
+int spawnRate = 15;
 
 // Grid Elements
 typedef enum{
@@ -284,7 +295,7 @@ int main(void) {
 		towerFireControl();
 		drawTowerRange(); 	
 		//spawn an enemy
-		if(spawnRate == 10){
+		if(spawnRate == 15){
 		spawnEnemy();
 		spawnRate = 0; //reset respawn time
 		}
@@ -744,6 +755,7 @@ void drawEnemies(){
     if(Enemies[i].active){
 	  if(Enemies[i].health <=0){
 		Enemies[i].active = false;
+    points += Enemies[i].points;
 		continue;
 	  }
       if(Enemies[i].type == 0){ //light
@@ -829,18 +841,43 @@ void placeOrUpgradeTower(){
 }
 
 void spawnEnemy(){
-  //determine kind of enemy to add to array (random? scripted?)
-  //LIGHT ENEMY
-  Enemies[numEnemies].type = 0;
-  //spawn x,y coords
-  Enemies[numEnemies].x = 2*GRID_LEN;
-  Enemies[numEnemies].y = 0;
-  Enemies[numEnemies].active = TRUE;
-  Enemies[numEnemies].health = 10;
-  Enemies[numEnemies].points = 5;
-  Enemies[numEnemies].speed = 2;
+  if(numEnemies < 50){
+    //determine kind of enemy to add to array (random? scripted?)
+    int type = rand() % 3; //random number 0,1,2
+    if(type == 0){
+      //LIGHT ENEMY
+      Enemies[numEnemies].type = 0;
+      //spawn x,y coords
+      Enemies[numEnemies].x = 2*GRID_LEN;
+      Enemies[numEnemies].y = 0;
+      Enemies[numEnemies].active = TRUE;
+      Enemies[numEnemies].health = LIGHTENEMYHEALTH;
+      Enemies[numEnemies].points = LIGHTENEMYPOINTS;
+      Enemies[numEnemies].speed = 2;
+    }else if(type == 1){
+      //MEDIUM ENEMY
+      Enemies[numEnemies].type = 1;
+      //spawn x,y coords
+      Enemies[numEnemies].x = 2*GRID_LEN;
+      Enemies[numEnemies].y = 0;
+      Enemies[numEnemies].active = TRUE;
+      Enemies[numEnemies].health = MEDIUMENEMYHEALTH;
+      Enemies[numEnemies].points = MEDIUMENEMYPOINTS;
+      Enemies[numEnemies].speed = 2;
+    }else{
+      //HEAVY ENEMY
+      Enemies[numEnemies].type = 2;
+      //spawn x,y coords
+      Enemies[numEnemies].x = 2*GRID_LEN;
+      Enemies[numEnemies].y = 0;
+      Enemies[numEnemies].active = TRUE;
+      Enemies[numEnemies].health = HEAVYENEMYHEALTH;
+      Enemies[numEnemies].points = HEAVYENEMYPOINTS;
+      Enemies[numEnemies].speed = 1;
+    }
 
-  numEnemies++;
+    numEnemies++;
+  }
 }
 
 // Function to put pixels
@@ -887,31 +924,31 @@ void setTowers(GridElements gridElement, int x, int y){
         case Light:
             Towers[numTowers].x = x;
             Towers[numTowers].y = y;
-			Towers[numTowers].damage = 2;
+			Towers[numTowers].damage = LIGHTTOWERDMG;
 			Towers[numTowers].fired = false;
 			Towers[numTowers].range = 50;
 			Towers[numTowers].readyToFire = true;
-			Towers[numTowers].reload_time = 5;
+			Towers[numTowers].reload_time = 4;
 			Towers[numTowers].remaining_reload_time = 0;
 			break;
 		case Medium:
 			Towers[numTowers].x = x;
             Towers[numTowers].y = y;
-			Towers[numTowers].damage = 5;
+			Towers[numTowers].damage = MEDIUMTOWERDMG;
 			Towers[numTowers].fired = false;
 			Towers[numTowers].range = 80;
 			Towers[numTowers].readyToFire = true;
-			Towers[numTowers].reload_time = 10;
+			Towers[numTowers].reload_time = 8;
 			Towers[numTowers].remaining_reload_time = 0;
 			break;
 		case Heavy:
 			Towers[numTowers].x = x;
             Towers[numTowers].y = y;
-			Towers[numTowers].damage = 10;
+			Towers[numTowers].damage = HEAVYTOWERDMG;
 			Towers[numTowers].fired = false;
 			Towers[numTowers].range = 120;
 			Towers[numTowers].readyToFire = true;
-			Towers[numTowers].reload_time = 25;
+			Towers[numTowers].reload_time = 15;
 			Towers[numTowers].remaining_reload_time = 0;
     default:
       break;
