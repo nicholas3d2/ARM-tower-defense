@@ -390,7 +390,7 @@ void move_box_y(int direction) {
   int nextY = direction + ycurrent;
   ycurrent = (nextY >= RESOLUTION_Y || nextY < 0) ? ycurrent : nextY;
 }
-
+//draw user "cursor" as a box on the grid
 void draw_grid_box(int x0, int y0, short int colour) {
   draw_line(x0, y0, x0 + (GRID_LEN - 1), y0, colour);
   draw_line(x0, y0, x0, y0 + (GRID_LEN - 1), colour);
@@ -413,6 +413,7 @@ void plot_pixel(int x, int y, short int line_color) {
   }
 }
 
+//get user input
 char get_jtag(volatile int *JTAG_UART_ptr) {
   int data;
   data = *(JTAG_UART_ptr);
@@ -422,6 +423,7 @@ char get_jtag(volatile int *JTAG_UART_ptr) {
     return ('\0');
 }
 
+//print user text to console
 void put_jtag(volatile int *JTAG_UART_ptr, char c) {
   int control;
   control = *(JTAG_UART_ptr + 1); // read control reg
@@ -730,6 +732,7 @@ void draw_path_up_left(int x, int y, short int colour){
 	plot_pixel(x + 8, y + 12, YELLOW);
 	plot_pixel(x+10, y+2, YELLOW);
 }
+//draw contents saved for each grid
 void draw_grid(){
 	for(int x = 0; x < GRID_WIDTH; x++){
 		for(int y = 0; y < GRID_HEIGHT; y++){
@@ -775,7 +778,7 @@ void draw_grid(){
 		}
 	}
 }
-
+//draw and update enemies
 void drawEnemies(){
   for(int i = 0; i < numEnemies; i++){
     if(Enemies[i].active){
@@ -830,7 +833,7 @@ void loseHealth(){
 	health--;
 	updateHealthToLEDR();
 }
-
+//place a tower or pause the game
 void placeOrUpgradeTower(){
 	GridElements currentlySelected = Grid[ycurrent / GRID_LEN][xcurrent/GRID_LEN];
 	switch (key_dir) {
@@ -865,7 +868,7 @@ void placeOrUpgradeTower(){
 	key_dir = 0;
 	return;
 }
-
+//spawn a new enemy
 void spawnEnemy(int wave){
   if(numEnemies < NUMENEMIES){
     //determine kind of enemy to add to array (random? scripted?)
@@ -1006,7 +1009,7 @@ void setTowers(GridElements gridElement, int x, int y){
     numTowers++;                //increment number of tower
 }
 
-
+//update tower status
 void updateTowers(){
 	if(tick){
 		tick = 0;				// reset tick
