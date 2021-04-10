@@ -76,7 +76,6 @@ void draw_line(int x0, int y0, int x1, int y1, short int line_color);
 void clear_screen();
 void wait_for_vsync();
 void draw_box(int x, int y, short int line_colour);
-void draw_turret_diamond(int x, int y, short int line_colour);
 void draw_turret_light(int x, int y, short int colour);
 void draw_turret_medium(int x, int y, short int colour);
 void draw_turret_heavy(int x, int y, short int colour);
@@ -134,6 +133,9 @@ int points = 75; //starting value
 // Spawn Rate
 int spawnTime = 15;
 int spawnRate = 15;
+
+//paused boolean
+bool paused = true;
 
 // Grid Elements
 typedef enum{
@@ -267,7 +269,7 @@ int main(void) {
 
 	// draw grid box (user controlled grid box)
 
-	// TEST JTAG UART
+	// JTAG UART
 	char text_string[] = "\nWelcome to ARM Tower Defense\n> \0";
 	char *str, c;
 		
@@ -279,6 +281,10 @@ int main(void) {
 	updateHealthToLEDR();
 	// Main program loop, read user inputs while running
 	while (1) {
+    while(paused){
+      placeOrUpgradeTower(); //key 3 read in here!
+      //do nothing, wait for user to unpause
+    }
     //update score on HEX3-0
     *HEX3_0_ptr = seg7[points % 10 & 0xF] | seg7[(points/10)%10 & 0xF] << 8 
     | seg7[(points/100)%10 & 0xF] << 16 | seg7[(points/1000)%10 & 0xF] << 24;
@@ -314,7 +320,6 @@ int main(void) {
 			placeOrUpgradeTower();
 		c = get_jtag(JTAG_UART_ptr);
 		if (c != '\0') {
-			put_jtag(JTAG_UART_ptr, c);
 			if (c == 'w') {
 				move_box_y(-GRID_LEN); // move up
 			} else if (c == 'a') {
@@ -327,7 +332,6 @@ int main(void) {
 				loseHealth();
 		}
 
-    
 
 		wait_for_vsync();
 		pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
@@ -456,19 +460,6 @@ void draw_box(int x, int y, short int line_colour) {
     draw_line(x0, y, x0, y + BOX_LEN, line_colour);
   }
 }
-
-// draws the diamond for a 20x20 box
-void draw_turret_diamond(int x, int y, short int line_colour) {
-  draw_line(x + 9, y + 2, x + 2, y + 9, line_colour); // top left edges
-  draw_line(x + 9, y + 3, x + 3, y + 9, line_colour);
-  draw_line(x + 10, y + 2, x + 17, y + 9, line_colour); // top right edges
-  draw_line(x + 10, y + 3, x + 16, y + 9, line_colour);
-  draw_line(x + 2, y + 10, x + 9, y + 17, line_colour); // bottom left edges
-  draw_line(x + 3, y + 10, x + 9, y + 16, line_colour);
-  draw_line(x + 10, y + 16, x + 16, y + 10, line_colour); // bottom right edges
-  draw_line(x + 10, y + 17, x + 17, y + 10, line_colour);
-}
-
 
 void draw_turret_light(int x, int y, short int colour){
   for(int i = x+5; i < x+15; i++){
@@ -805,6 +796,7 @@ void loseHealth(){
 	health--;
 	updateHealthToLEDR();
 }
+
 void placeOrUpgradeTower(){
 	GridElements currentlySelected = Grid[ycurrent / GRID_LEN][xcurrent/GRID_LEN];
 	switch (key_dir) {
@@ -830,10 +822,8 @@ void placeOrUpgradeTower(){
 				setTowers(Heavy, xcurrent, ycurrent);
 			}
 			break;
-		case 4:									// upgrade
-			// if (currentlySelected == 0) {
-			// 	Grid[ycurrent / GRID_LEN][xcurrent / GRID_LEN] = Heavy;
-			// }
+		case 4:									// start/stop game
+      paused = !paused;
 			break;
 		default:
 			break;
