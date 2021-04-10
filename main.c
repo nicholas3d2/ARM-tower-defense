@@ -62,15 +62,468 @@
 #define MEDIUMENEMYPOINTS 15.0
 #define HEAVYENEMYPOINTS 25.0
 
-#define NUMENEMIES 25
+#define NUMENEMIES 15
 
 
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "interrupt.h"
-#include "cvector.h"
+/**********#include "interrupt.h"**********/
+/* This files provides address values that exist in the system */
+
+#define BOARD "DE1-SoC"
+
+/* Memory */
+#define DDR_BASE 0x00000000
+#define DDR_END 0x3FFFFFFF
+#define A9_ONCHIP_BASE 0xFFFF0000
+#define A9_ONCHIP_END 0xFFFFFFFF
+#define SDRAM_BASE 0xC0000000
+#define SDRAM_END 0xC3FFFFFF
+#define FPGA_ONCHIP_BASE 0xC8000000
+#define FPGA_ONCHIP_END 0xC803FFFF
+#define FPGA_CHAR_BASE 0xC9000000
+#define FPGA_CHAR_END 0xC9001FFF
+
+/* Cyclone V FPGA devices */
+#define LEDR_BASE 0xFF200000
+#define HEX3_HEX0_BASE 0xFF200020
+#define HEX5_HEX4_BASE 0xFF200030
+#define SW_BASE 0xFF200040
+#define KEY_BASE 0xFF200050
+#define JP1_BASE 0xFF200060
+#define JP2_BASE 0xFF200070
+#define PS2_BASE 0xFF200100
+#define PS2_DUAL_BASE 0xFF200108
+#define JTAG_UART_BASE 0xFF201000
+#define JTAG_UART_2_BASE 0xFF201008
+#define IrDA_BASE 0xFF201020
+#define TIMER_BASE 0xFF202000
+#define AV_CONFIG_BASE 0xFF203000
+#define PIXEL_BUF_CTRL_BASE 0xFF203020
+#define CHAR_BUF_CTRL_BASE 0xFF203030
+#define AUDIO_BASE 0xFF203040
+#define VIDEO_IN_BASE 0xFF203060
+#define ADC_BASE 0xFF204000
+
+/* Cyclone V HPS devices */
+#define HPS_GPIO1_BASE 0xFF709000
+#define HPS_TIMER0_BASE 0xFFC08000
+#define HPS_TIMER1_BASE 0xFFC09000
+#define HPS_TIMER2_BASE 0xFFD00000
+#define HPS_TIMER3_BASE 0xFFD01000
+#define FPGA_BRIDGE 0xFFD0501C
+
+/* ARM A9 MPCORE devices */
+#define PERIPH_BASE 0xFFFEC000       // base address of peripheral devices
+#define MPCORE_PRIV_TIMER 0xFFFEC600 // PERIPH_BASE + 0x0600
+
+/* Interrupt controller (GIC) CPU interface(s) */
+#define MPCORE_GIC_CPUIF 0xFFFEC100 // PERIPH_BASE + 0x100
+#define ICCICR 0x00                 // offset to CPU interface control reg
+#define ICCPMR 0x04                 // offset to interrupt priority mask reg
+#define ICCIAR 0x0C                 // offset to interrupt acknowledge reg
+#define ICCEOIR 0x10                // offset to end of interrupt reg
+/* Interrupt controller (GIC) distributor interface(s) */
+#define MPCORE_GIC_DIST 0xFFFED000 // PERIPH_BASE + 0x1000
+#define ICDDCR 0x00                // offset to distributor control reg
+#define ICDISER 0x100              // offset to interrupt set-enable regs
+#define ICDICER 0x180              // offset to interrupt clear-enable regs
+#define ICDIPTR 0x800              // offset to interrupt processor targets regs
+#define ICDICFR 0xC00              // offset to interrupt configuration regs
+
+#define EDGE_TRIGGERED 0x1
+#define LEVEL_SENSITIVE 0x0
+#define CPU0 0x01 // bit-mask; bit 0 represents cpu0
+#define ENABLE 0x1
+
+#define KEY0 0
+#define KEY1 1
+#define KEY2 2
+#define KEY3 3
+#define NONE 4
+
+#define RIGHT 1
+#define LEFT 2
+
+#define USER_MODE 0b10000
+#define FIQ_MODE 0b10001
+#define IRQ_MODE 0b10010
+#define SVC_MODE 0b10011
+#define ABORT_MODE 0b10111
+#define UNDEF_MODE 0b11011
+#define SYS_MODE 0b11111
+
+#define INT_ENABLE 0b01000000
+#define INT_DISABLE 0b11000000
+/* This file provides interrupt IDs */
+
+/* FPGA interrupts (there are 64 in total; only a few are defined below) */
+#define INTERVAL_TIMER_IRQ 72
+#define KEYS_IRQ 73
+#define FPGA_IRQ2 74
+#define FPGA_IRQ3 75
+#define FPGA_IRQ4 76
+#define FPGA_IRQ5 77
+#define AUDIO_IRQ 78
+#define PS2_IRQ 79
+#define JTAG_IRQ 80
+#define IrDA_IRQ 81
+#define FPGA_IRQ10 82
+#define JP1_IRQ 83
+#define JP2_IRQ 84
+#define FPGA_IRQ13 85
+#define FPGA_IRQ14 86
+#define FPGA_IRQ15 87
+#define FPGA_IRQ16 88
+#define PS2_DUAL_IRQ 89
+#define FPGA_IRQ18 90
+#define FPGA_IRQ19 91
+
+/* ARM A9 MPCORE devices (there are many; only a few are defined below) */
+#define MPCORE_GLOBAL_TIMER_IRQ 27
+#define MPCORE_PRIV_TIMER_IRQ 29
+#define MPCORE_WATCHDOG_IRQ 30
+
+/* HPS devices (there are many; only a few are defined below) */
+#define HPS_UART0_IRQ 194
+#define HPS_UART1_IRQ 195
+#define HPS_GPIO0_IRQ 196
+#define HPS_GPIO1_IRQ 197
+#define HPS_GPIO2_IRQ 198
+#define HPS_TIMER0_IRQ 199
+#define HPS_TIMER1_IRQ 200
+#define HPS_TIMER2_IRQ 201
+#define HPS_TIMER3_IRQ 202
+#define HPS_WATCHDOG0_IRQ 203
+#define HPS_WATCHDOG1_IRQ 204
+
+void set_A9_IRQ_stack(void);
+void config_GIC(void);
+void config_KEYs(void);
+void config_interval_timer();
+void enable_A9_interrupts(void);
+void interval_timer_ISR();
+void __attribute__((interrupt)) __cs3_isr_irq(void);
+
+
+/* key_dir is written by interrupt service routine; we have to
+ * declare these as volatile to avoid the compiler caching their values in
+ * registers */
+
+extern volatile int key_dir;
+extern volatile int tick;         // Timer interrupt sets it to 1, must be set to 0 by program
+
+// int main(void) {
+//   set_A9_IRQ_stack();      // initialize the stack pointer for IRQ mode
+//   config_GIC();            // configure the general interrupt controller
+//   // interrupts
+//   config_KEYs();          // configure pushbutton KEYs to generate interrupts
+//   enable_A9_interrupts(); // enable interrupts
+// }
+
+/* setup the KEY interrupts in the FPGA */
+void config_KEYs() {
+  volatile int *KEY_ptr = (int *)KEY_BASE; // pushbutton KEY address
+  *(KEY_ptr + 2) = 0b1111;                    // enable interrupts for KEY0-3
+}
+/*
+ * Initialize the banked stack pointer register for IRQ mode
+ */
+void set_A9_IRQ_stack(void) {
+  int stack, mode;
+  stack = A9_ONCHIP_END - 7; // top of A9 onchip memory, aligned to 8 bytes
+  /* change processor to IRQ mode with interrupts disabled */
+  mode = INT_DISABLE | IRQ_MODE;
+  asm("msr cpsr, %[ps]" : : [ps] "r"(mode));
+  /* set banked stack pointer */
+  asm("mov sp, %[ps]" : : [ps] "r"(stack));
+  /* go back to SVC mode before executing subroutine return! */
+  mode = INT_DISABLE | SVC_MODE;
+  asm("msr cpsr, %[ps]" : : [ps] "r"(mode));
+}
+/*
+ * Turn on interrupts in the ARM processor
+ */
+void enable_A9_interrupts(void) {
+  int status = SVC_MODE | INT_ENABLE;
+  asm("msr cpsr, %[ps]" : : [ps] "r"(status));
+}
+/*
+ * Configure the Generic Interrupt Controller (GIC)
+ */
+void config_GIC(void) {
+  int address; // used to calculate register addresses
+  /* configure the HPS timer interrupt */
+  *((int *)0xFFFED8C4) = 0x01000000;
+  *((int *)0xFFFED118) = 0x00000080;
+  /* configure the FPGA interval timer and KEYs interrupts */
+  *((int *)0xFFFED848) = 0x00000101;
+  *((int *)0xFFFED108) = 0x00000300;
+  // Set Interrupt Priority Mask Register (ICCPMR). Enable interrupts of all
+  // priorities
+  address = MPCORE_GIC_CPUIF + ICCPMR;
+  *((int *)address) = 0xFFFF;
+  // Set CPU Interface Control Register (ICCICR). Enable signaling of
+  // interrupts
+  address = MPCORE_GIC_CPUIF + ICCICR;
+  *((int *)address) = ENABLE;
+  // Configure the Distributor Control Register (ICDDCR) to send pending
+  // interrupts to CPUs
+  address = MPCORE_GIC_DIST + ICDDCR;
+  *((int *)address) = ENABLE;
+}
+void config_interval_timer() {
+  volatile int *interval_timer_ptr =
+      (int *)TIMER_BASE; // interal timer base address
+  /* set the interval timer period for scrolling the HEX displays */
+  int counter = 50000000; // 1/(100 MHz) x 5x10^6 = 50 msec
+  *(interval_timer_ptr + 0x2) = (counter & 0xFFFF);
+  *(interval_timer_ptr + 0x3) = (counter >> 16) & 0xFFFF;
+  /* start interval timer, enable its interrupts */
+  *(interval_timer_ptr + 1) = 0x7; // STOP = 0, START = 1, CONT = 1, ITO = 1
+}
+
+void pushbutton_ISR(void) {
+    volatile int *KEY_ptr = (int *)KEY_BASE;
+    int press;
+    press = *(KEY_ptr + 3); // read the pushbutton interrupt register
+    *(KEY_ptr + 3) = press; // Clear the interrupt
+    if(press == 0b1)         // KEY0 pressed
+        key_dir = 1;           // Toggle key_dir value
+    else if(press == 0b10)  //KEY1 pressed
+        key_dir = 2;
+    else if (press == 0b100) // KEY1 pressed
+      key_dir = 3;
+    else if (press == 0b1000) // KEY1 pressed
+      key_dir = 4;
+    printf("%d", press);
+    return;
+}
+void __attribute__((interrupt)) __cs3_isr_irq(void) {
+    // Read the ICCIAR from the processor interface
+    int address = MPCORE_GIC_CPUIF + ICCIAR;
+    int int_ID = *((int *)address);
+    if (int_ID == KEYS_IRQ) // check if interrupt is from the KEYs
+        pushbutton_ISR();
+    else if (int_ID == INTERVAL_TIMER_IRQ)
+      interval_timer_ISR();
+    else 
+      while (1)
+        ; // if unexpected, then stay here
+    // Write to the End of Interrupt Register (ICCEOIR)
+    address = MPCORE_GIC_CPUIF + ICCEOIR;
+    *((int *)address) = int_ID;
+    return;
+}
+void interval_timer_ISR() {
+  volatile int *interval_timer_ptr = (int *)TIMER_BASE;
+  tick++;
+  *(interval_timer_ptr) = 0;               // Clear the interrupt
+  return;
+}
+
+/**********#include "interrupt.h"**********/
+/**********#include "cvector.h"***********/
+// from Github: https://github.com/eteran/c-vector
+#ifndef CVECTOR_H_
+#define CVECTOR_H_
+
+#include <assert.h> /* for assert */
+#include <stdlib.h> /* for malloc/realloc/free */
+#define CVECTOR_LOGARITHMIC_GROWTH
+/**
+ * @brief cvector_vector_type - The vector type used in this library
+ */
+#define cvector_vector_type(type) type *
+
+/**
+ * @brief cvector_set_capacity - For internal use, sets the capacity variable of
+ * the vector
+ * @param vec - the vector
+ * @param size - the new capacity to set
+ * @return void
+ */
+#define cvector_set_capacity(vec, size)                                        \
+  do {                                                                         \
+    if (vec) {                                                                 \
+      ((size_t *)(vec))[-1] = (size);                                          \
+    }                                                                          \
+  } while (0)
+
+/**
+ * @brief cvector_set_size - For internal use, sets the size variable of the
+ * vector
+ * @param vec - the vector
+ * @param size - the new capacity to set
+ * @return void
+ */
+#define cvector_set_size(vec, size)                                            \
+  do {                                                                         \
+    if (vec) {                                                                 \
+      ((size_t *)(vec))[-2] = (size);                                          \
+    }                                                                          \
+  } while (0)
+
+/**
+ * @brief cvector_capacity - gets the current capacity of the vector
+ * @param vec - the vector
+ * @return the capacity as a size_t
+ */
+#define cvector_capacity(vec) ((vec) ? ((size_t *)(vec))[-1] : (size_t)0)
+
+/**
+ * @brief cvector_size - gets the current size of the vector
+ * @param vec - the vector
+ * @return the size as a size_t
+ */
+#define cvector_size(vec) ((vec) ? ((size_t *)(vec))[-2] : (size_t)0)
+
+/**
+ * @brief cvector_empty - returns non-zero if the vector is empty
+ * @param vec - the vector
+ * @return non-zero if empty, zero if non-empty
+ */
+#define cvector_empty(vec) (cvector_size(vec) == 0)
+
+/**
+ * @brief cvector_grow - For internal use, ensures that the vector is at least
+ * <count> elements big
+ * @param vec - the vector
+ * @param count - the new capacity to set
+ * @return void
+ */
+#define cvector_grow(vec, count)                                               \
+  do {                                                                         \
+    const size_t cv_sz = (count) * sizeof(*(vec)) + (sizeof(size_t) * 2);      \
+    if (!(vec)) {                                                              \
+      size_t *cv_p = malloc(cv_sz);                                            \
+      assert(cv_p);                                                            \
+      (vec) = (void *)(&cv_p[2]);                                              \
+      cvector_set_capacity((vec), (count));                                    \
+      cvector_set_size((vec), 0);                                              \
+    } else {                                                                   \
+      size_t *cv_p1 = &((size_t *)(vec))[-2];                                  \
+      size_t *cv_p2 = realloc(cv_p1, (cv_sz));                                 \
+      assert(cv_p2);                                                           \
+      (vec) = (void *)(&cv_p2[2]);                                             \
+      cvector_set_capacity((vec), (count));                                    \
+    }                                                                          \
+  } while (0)
+
+/**
+ * @brief cvector_pop_back - removes the last element from the vector
+ * @param vec - the vector
+ * @return void
+ */
+#define cvector_pop_back(vec)                                                  \
+  do {                                                                         \
+    cvector_set_size((vec), cvector_size(vec) - 1);                            \
+  } while (0)
+
+/**
+ * @brief cvector_erase - removes the element at index i from the vector
+ * @param vec - the vector
+ * @param i - index of element to remove
+ * @return void
+ */
+#define cvector_erase(vec, i)                                                  \
+  do {                                                                         \
+    if (vec) {                                                                 \
+      const size_t cv_sz = cvector_size(vec);                                  \
+      if ((i) < cv_sz) {                                                       \
+        cvector_set_size((vec), cv_sz - 1);                                    \
+        size_t cv_x;                                                           \
+        for (cv_x = (i); cv_x < (cv_sz - 1); ++cv_x) {                         \
+          (vec)[cv_x] = (vec)[cv_x + 1];                                       \
+        }                                                                      \
+      }                                                                        \
+    }                                                                          \
+  } while (0)
+
+/**
+ * @brief cvector_free - frees all memory associated with the vector
+ * @param vec - the vector
+ * @return void
+ */
+#define cvector_free(vec)                                                      \
+  do {                                                                         \
+    if (vec) {                                                                 \
+      size_t *p1 = &((size_t *)(vec))[-2];                                     \
+      free(p1);                                                                \
+    }                                                                          \
+  } while (0)
+
+/**
+ * @brief cvector_begin - returns an iterator to first element of the vector
+ * @param vec - the vector
+ * @return a pointer to the first element (or NULL)
+ */
+#define cvector_begin(vec) (vec)
+
+/**
+ * @brief cvector_end - returns an iterator to one past the last element of the
+ * vector
+ * @param vec - the vector
+ * @return a pointer to one past the last element (or NULL)
+ */
+#define cvector_end(vec) ((vec) ? &((vec)[cvector_size(vec)]) : NULL)
+
+/* user request to use logarithmic growth algorithm */
+#ifdef CVECTOR_LOGARITHMIC_GROWTH
+
+/**
+ * @brief cvector_push_back - adds an element to the end of the vector
+ * @param vec - the vector
+ * @param value - the value to add
+ * @return void
+ */
+#define cvector_push_back(vec, value)                                          \
+  do {                                                                         \
+    size_t cv_cap = cvector_capacity(vec);                                     \
+    if (cv_cap <= cvector_size(vec)) {                                         \
+      cvector_grow((vec), !cv_cap ? cv_cap + 1 : cv_cap * 2);                  \
+    }                                                                          \
+    vec[cvector_size(vec)] = (value);                                          \
+    cvector_set_size((vec), cvector_size(vec) + 1);                            \
+  } while (0)
+
+#else
+
+/**
+ * @brief cvector_push_back - adds an element to the end of the vector
+ * @param vec - the vector
+ * @param value - the value to add
+ * @return void
+ */
+#define cvector_push_back(vec, value)                                          \
+  do {                                                                         \
+    size_t cv_cap = cvector_capacity(vec);                                     \
+    if (cv_cap <= cvector_size(vec)) {                                         \
+      cvector_grow((vec), cv_cap + 1);                                         \
+    }                                                                          \
+    vec[cvector_size(vec)] = (value);                                          \
+    cvector_set_size((vec), cvector_size(vec) + 1);                            \
+  } while (0)
+
+#endif /* CVECTOR_LOGARITHMIC_GROWTH */
+
+/**
+ * @brief cvector_copy - copy a vector
+ * @param from - the original vector
+ * @param to - destination to which the function copy to
+ * @return void
+ */
+#define cvector_copy(from, to)                                                 \
+  do {                                                                         \
+    for (size_t i = 0; i < cvector_size(from); i++) {                          \
+      cvector_push_back(to, from[i]);                                          \
+    }                                                                          \
+  } while (0)
+
+#endif /* CVECTOR_H_ */
+/**********#include "cvector.h"***********/
 
 // function prototypes
 void plot_pixel(int x, int y, short int line_color);
@@ -92,6 +545,9 @@ void draw_path_down_right(int x, int y, short int colour);
 void draw_path_down_left(int x, int y, short int colour);
 void draw_path_up_right(int x, int y, short int colour);
 void draw_path_up_left(int x, int y, short int colour);
+
+//update score
+void updateScoreOnHEX(volatile int *HEX3_0_ptr, volatile int *HEX5_4_ptr);
 
 // health related functions
 void updateHealthToLEDR();
@@ -287,6 +743,7 @@ int main(void) {
 
 	// initialize health
 	updateHealthToLEDR();
+  
 	// Main program loop, read user inputs while running
 	while (1) {
     noEnemies = true;
@@ -296,9 +753,8 @@ int main(void) {
     }
 
     //update score on HEX3-0
-    *HEX3_0_ptr = seg7[points % 10 & 0xF] | seg7[(points/10)%10 & 0xF] << 8 
-    | seg7[(points/100)%10 & 0xF] << 16 | seg7[(points/1000)%10 & 0xF] << 24;
-    *HEX5_4_ptr = seg7[(points/10000)%10 & 0xF] | seg7[(points/100000)%10 & 0xF] << 8;
+    updateScoreOnHEX(HEX3_0_ptr, HEX5_4_ptr);
+    
 		// clear 2 frames before
 		clear_pixels();
 		// draw
@@ -378,6 +834,12 @@ void resetData(){
   clear_screen();
   numEnemies = 0;
   numTowers = 0;
+}
+
+void updateScoreOnHEX(volatile int *HEX3_0_ptr, volatile int *HEX5_4_ptr){
+  *HEX3_0_ptr = seg7[points % 10 & 0xF] | seg7[(points/10)%10 & 0xF] << 8 
+  | seg7[(points/100)%10 & 0xF] << 16 | seg7[(points/1000)%10 & 0xF] << 24;
+  *HEX5_4_ptr = seg7[(points/10000)%10 & 0xF] | seg7[(points/100000)%10 & 0xF] << 8;
 }
 
 // moves a 20x20 box around on the screen
