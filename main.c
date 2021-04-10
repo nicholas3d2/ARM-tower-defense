@@ -60,7 +60,9 @@
 //Enemy points
 #define LIGHTENEMYPOINTS 5.0
 #define MEDIUMENEMYPOINTS 15.0
-#define HEAVYENEMYPOINTS 30.0
+#define HEAVYENEMYPOINTS 25.0
+
+#define NUMENEMIES 25
 
 
 #include <stdbool.h>
@@ -186,6 +188,8 @@ int numTowers = 0;
 //number of enemies on map
 int numEnemies = 0;
 
+bool noEnemies = true;
+
 // tower properties:
 struct tower{
   int x, y;       // location of the grid, do we need??
@@ -206,7 +210,7 @@ struct enemy{
   int type; //0 = light, 1 = medium, 2 = heavy
   bool active; //see if enemy spawned, and on screen
   
-}Enemies[50]; //max 50 enemies
+}Enemies[NUMENEMIES]; //max 50 enemies
 
 // tower setup functions
 void setTowers(GridElements gridElement, int x, int y);
@@ -214,7 +218,7 @@ void setTowers(GridElements gridElement, int x, int y);
 void updateTowers();
 
 // spawn enemy
-void spawnEnemy();
+void spawnEnemy(int wave);
 
 // Interrupt KEY
 volatile int key_dir = 0;
@@ -236,10 +240,14 @@ cvector_vector_type(xy) pixel_prev1 = NULL;		// previous frame drawn
 cvector_vector_type(xy) pixel_prev2 = NULL;		// 2 frams ago (clears the screen using this)
 void update_pixel_buffer();						// shifts pixel buffer
 void clear_pixels();							// clears pixels drawn
+void resetData(); //clean up datastructures
 /************main.h************/
 
 int main(void) {
   
+  
+  int wave = 1;
+
   volatile int *JTAG_UART_ptr = (int *)0xFF201000; // JTAG UART address
   volatile int *pixel_ctrl_ptr = (int *)0xFF203020;
   volatile int *HEX3_0_ptr = (int *)HEX3_HEX0_BASE;
@@ -281,10 +289,12 @@ int main(void) {
 	updateHealthToLEDR();
 	// Main program loop, read user inputs while running
 	while (1) {
+    noEnemies = true;
     while(paused){
       placeOrUpgradeTower(); //key 3 read in here!
       //do nothing, wait for user to unpause
     }
+
     //update score on HEX3-0
     *HEX3_0_ptr = seg7[points % 10 & 0xF] | seg7[(points/10)%10 & 0xF] << 8 
     | seg7[(points/100)%10 & 0xF] << 16 | seg7[(points/1000)%10 & 0xF] << 24;
@@ -301,9 +311,9 @@ int main(void) {
 		drawTowerRange(); 	
 		//spawn an enemy
 		if(spawnRate == spawnTime){
-		spawnEnemy();
+		spawnEnemy(wave);
 		spawnRate = 0; //reset respawn time
-      if(numEnemies % 5 == 0){ //every 5 spawns lower spawn time
+      if(numEnemies % 5 == 0 && spawnTime > 10){ //every 5 spawns lower spawn time
         spawnTime--;
       }
 		}
@@ -336,6 +346,15 @@ int main(void) {
 		wait_for_vsync();
 		pixel_buffer_start = *(pixel_ctrl_ptr + 1); // new back buffer
 
+    if(numEnemies == NUMENEMIES && noEnemies){ //round ended
+      char game_over[] = "\nWave ended\n> \0";
+			for (str = game_over; *str != 0; ++str) {
+				put_jtag(JTAG_UART_ptr, *str);
+			}
+      numEnemies = 0;
+      wave++;
+    }
+
 		// game over if no health left, exits the program
 		if(health == 0){	
 			char game_over[] = "\nGame Over\n> \0";
@@ -344,7 +363,21 @@ int main(void) {
 			}
 			break;
 		}
+    if(wave == 4){
+      char game_over[] = "\nYou Win!\n> \0";
+			for (str = game_over; *str != 0; ++str) {
+				put_jtag(JTAG_UART_ptr, *str);
+			}
+			break;
+    }
 	}
+  resetData(); 
+}
+
+void resetData(){
+  clear_screen();
+  numEnemies = 0;
+  numTowers = 0;
 }
 
 // moves a 20x20 box around on the screen
@@ -746,6 +779,7 @@ void draw_grid(){
 void drawEnemies(){
   for(int i = 0; i < numEnemies; i++){
     if(Enemies[i].active){
+    noEnemies = false;
 	  if(Enemies[i].health <=0){
 		Enemies[i].active = false;
     points += Enemies[i].points;
@@ -832,42 +866,66 @@ void placeOrUpgradeTower(){
 	return;
 }
 
-void spawnEnemy(){
-  if(numEnemies < 50){
+void spawnEnemy(int wave){
+  if(numEnemies < NUMENEMIES){
     //determine kind of enemy to add to array (random? scripted?)
-    int type = rand() % 3; //random number 0,1,2
-    if(type == 0){
-      //LIGHT ENEMY
-      Enemies[numEnemies].type = 0;
-      //spawn x,y coords
-      Enemies[numEnemies].x = 2*GRID_LEN;
-      Enemies[numEnemies].y = 0;
-      Enemies[numEnemies].active = TRUE;
-      Enemies[numEnemies].health = LIGHTENEMYHEALTH;
-      Enemies[numEnemies].points = LIGHTENEMYPOINTS;
-      Enemies[numEnemies].speed = 2;
-    }else if(type == 1){
-      //MEDIUM ENEMY
-      Enemies[numEnemies].type = 1;
-      //spawn x,y coords
-      Enemies[numEnemies].x = 2*GRID_LEN;
-      Enemies[numEnemies].y = 0;
-      Enemies[numEnemies].active = TRUE;
-      Enemies[numEnemies].health = MEDIUMENEMYHEALTH;
-      Enemies[numEnemies].points = MEDIUMENEMYPOINTS;
-      Enemies[numEnemies].speed = 2;
-    }else{
-      //HEAVY ENEMY
-      Enemies[numEnemies].type = 2;
-      //spawn x,y coords
-      Enemies[numEnemies].x = 2*GRID_LEN;
-      Enemies[numEnemies].y = 0;
-      Enemies[numEnemies].active = TRUE;
-      Enemies[numEnemies].health = HEAVYENEMYHEALTH;
-      Enemies[numEnemies].points = HEAVYENEMYPOINTS;
-      Enemies[numEnemies].speed = 1;
-    }
+    if(wave == 1){
+      int type = rand() % 3; //random number 0,1,2
+      if(type == 0){
+        //LIGHT ENEMY
+        Enemies[numEnemies].type = 0;
+        //spawn x,y coords
+        Enemies[numEnemies].x = 2*GRID_LEN;
+        Enemies[numEnemies].y = 0;
+        Enemies[numEnemies].active = TRUE;
+        Enemies[numEnemies].health = LIGHTENEMYHEALTH;
+        Enemies[numEnemies].points = LIGHTENEMYPOINTS;
+        Enemies[numEnemies].speed = 2;
+      }else if(type == 1){
+        //MEDIUM ENEMY
+        Enemies[numEnemies].type = 1;
+        //spawn x,y coords
+        Enemies[numEnemies].x = 2*GRID_LEN;
+        Enemies[numEnemies].y = 0;
+        Enemies[numEnemies].active = TRUE;
+        Enemies[numEnemies].health = MEDIUMENEMYHEALTH;
+        Enemies[numEnemies].points = MEDIUMENEMYPOINTS;
+        Enemies[numEnemies].speed = 2;
+      }else{
+        //HEAVY ENEMY
+        Enemies[numEnemies].type = 2;
+        //spawn x,y coords
+        Enemies[numEnemies].x = 2*GRID_LEN;
+        Enemies[numEnemies].y = 0;
+        Enemies[numEnemies].active = TRUE;
+        Enemies[numEnemies].health = HEAVYENEMYHEALTH;
+        Enemies[numEnemies].points = HEAVYENEMYPOINTS;
+        Enemies[numEnemies].speed = 1;
+      }
 
+    }else if(wave == 2){
+      //HEAVY ENEMY
+        Enemies[numEnemies].type = 2;
+        //spawn x,y coords
+        Enemies[numEnemies].x = 2*GRID_LEN;
+        Enemies[numEnemies].y = 0;
+        Enemies[numEnemies].active = TRUE;
+        Enemies[numEnemies].health = HEAVYENEMYHEALTH;
+        Enemies[numEnemies].points = HEAVYENEMYPOINTS;
+        Enemies[numEnemies].speed = 2;
+
+    }else{ //wave 3!
+      //HEAVY ENEMY
+        Enemies[numEnemies].type = 2;
+        //spawn x,y coords
+        Enemies[numEnemies].x = 2*GRID_LEN;
+        Enemies[numEnemies].y = 0;
+        Enemies[numEnemies].active = TRUE;
+        Enemies[numEnemies].health = 2*HEAVYENEMYHEALTH;
+        Enemies[numEnemies].points = HEAVYENEMYPOINTS;
+        Enemies[numEnemies].speed = 2;
+
+    }
     numEnemies++;
   }
 }
