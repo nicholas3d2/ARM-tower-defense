@@ -30,7 +30,7 @@ Tower Defense is a type of strategy game where the goal is to stop the enemies f
 
 2.1 How to run
 
-Load file (main.c) into CPULATOR, compile and run. Click KEY3 to start the game
+Load file (main.c) into [CPULATOR](https://cpulator.01xz.net/?sys=arm-de1soc&d_audio=48000), change language to C, compile and run. Click KEY3 to start the game
 
 2.2 Controls
 
