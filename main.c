@@ -1,5 +1,8 @@
-/* Description: main.c file for tower defense game, developed for CPULATOR
- */
+/* 
+Description: main.c file for tower defense game, developed for CPULATOR
+Authors: Nicholas Ishankov, Jintao Huang
+Date: 10/04/2021
+*/
 //#include "main.h"
 
 /************main.h************/
